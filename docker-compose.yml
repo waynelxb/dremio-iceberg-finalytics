@@ -1,4 +1,4 @@
-version: "3"
+version: "3.7"
 
 services:
   # Nessie Catalog Server Using In-Memory Store
@@ -10,16 +10,14 @@ services:
       - QUARKUS_HTTP_PORT=19120
       - QUARKUS_LOG_CONSOLE_FORMAT=%d{yyyy-MM-dd HH:mm:ss} %-5p [%c{1.}] (%t) %s%e%n
       - QUARKUS_LOG_LEVEL=INFO
-      - QUARKUS_DATASOURCE_DB_KIND=rocksdb
-      - QUARKUS_DATASOURCE_JDBC_URL=jdbc:rocksdb:file:///nessie/data
-      - QUARKUS_DATASOURCE_USERNAME=nessie
-      - QUARKUS_DATASOURCE_PASSWORD=nessie
     volumes:
       - ./nessie-data:/nessie/data  # Mount local directory to persist RocksDB data
     ports:
       - "19120:19120"  # Expose Nessie API port
     networks:
       intro-network:
+        ipv4_address: 172.22.0.2
+
   # Minio Storage Server
   minio:
     image: minio/minio
@@ -40,6 +38,7 @@ services:
       retries: 3
     volumes:
       - ./minio-data:/minio-data  # Mount the local folder to container
+      - ./minio-volume:/data
     entrypoint: >
       /bin/sh -c "
       minio server /data --console-address ':9001' &
@@ -53,7 +52,8 @@ services:
       tail -f /dev/null"
     networks:
       intro-network:
-  
+        ipv4_address: 172.22.0.3
+
   # Spark
   spark:
     platform: linux/x86_64
@@ -76,12 +76,13 @@ services:
       - SPARK_HISTORY_OPTS=-Dspark.history.fs.logDirectory=/tmp/spark-events
       - SPARK_HOME=/opt/spark  # Set SPARK_HOME explicitly
     volumes:
-      - ./notebook-seed:/workspace/seed-data  # Volume for seeding data into the container
+      # - ./notebook-seed:/workspace/seed-data  # Volume for seeding data into the container
+      - ./spark-jupyter-workspace:/workspace  # Volume for seeding data into the container
     container_name: spark
     entrypoint: >
       /bin/bash -c "
       /opt/spark/sbin/start-master.sh && \
-      /opt/spark/sbin/start-worker.sh spark://localhost:7077 && \
+      /opt/spark/sbin/start-worker.sh spark://$(hostname):7077 && \
       mkdir -p /tmp/spark-events && \
       start-history-server.sh && \
       jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root --NotebookApp.token='' --NotebookApp.password='' && \
@@ -89,6 +90,7 @@ services:
       "
     networks:
       intro-network:
+        ipv4_address: 172.22.0.4
 
   # Dremio
   dremio:
@@ -104,6 +106,12 @@ services:
       - DREMIO_JAVA_SERVER_EXTRA_OPTS=-Dpaths.dist=file:///opt/dremio/data/dist
     networks:
       intro-network:
+        ipv4_address: 172.22.0.5
 
 networks:
   intro-network:
+    ipam:
+      config:
+        - subnet: 172.22.0.0/24
+          gateway: 172.22.0.1
+
