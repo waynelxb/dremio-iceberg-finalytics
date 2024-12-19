@@ -3,7 +3,7 @@ version: "3.7"
 services:
   # Nessie Catalog Server Using In-Memory Store
   nessie:
-    image: nessie-finalytics:latest
+    image: projectnessie/nessie:latest
     container_name: nessie
     environment:
       - QUARKUS_PROFILE=prod
@@ -20,7 +20,7 @@ services:
 
   # Minio Storage Server
   minio:
-    image: minio-finalytics:latest
+    image: minio/minio
     container_name: minio
     environment:
       - MINIO_ROOT_USER=admin
@@ -57,7 +57,7 @@ services:
   # Spark
   spark:
     platform: linux/x86_64
-    image: spark-finalytics:latest
+    image: alexmerced/spark35nb:latest
     ports: 
       - 8080:8080    # Master Web UI
       - 7077:7077    # Master Port for job submissions
@@ -95,7 +95,7 @@ services:
   # Dremio
   dremio:
     platform: linux/x86_64
-    image: dremio-finalytics:latest
+    image: dremio/dremio-oss:latest
     ports:
       - 9047:9047
       - 31010:31010
