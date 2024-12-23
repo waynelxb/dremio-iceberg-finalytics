@@ -1,23 +1,36 @@
-from pyspark.sql import SparkSession
+from pyspark.sql import SparkSession, Row
 from pyspark.sql.types import StructType, StructField, StringType, FloatType, TimestampType
 import yfinance as yf
-from datetime import datetime, date
+import yaml
+from datetime import date, datetime, timedelta
+from registered_tables import RegisteredTables
+
+
+# import psycopg2.extras
+# import psycopg2
+# from pgcopy import CopyManager
 
 # Define the custom exception
 class MyCustomException(Exception):
     pass
 
 # Main class for ingestion
-class YFinanceStageIngestion:
-    def __init__(self, equity_type, destination):
+class RawYFIngestion:
+    # Basic attributes of the class
+    def __init__(self, equity_type, zone, sink_table, config_file_path):
         self.equity_type = equity_type
-        self.destination = destination
-        self.import_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S.") + str(datetime.now().microsecond)[:3]      
-
+        self.zone=zone
+        self.sink_table = sink_table
+        self.config_file_path = config_file_path
+        self.import_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S.") + str(datetime.now().microsecond)[:3]
+        rt=RegisteredTables(self.zone, self.sink_table, self.config_file_path)
+        self.registered_column_list = rt.get_column_list()
+        self.registered_struct_type = rt.get_struct_type()        
+        
     # Function to fetch data from Yahoo Finance
-    def fetch_yfinance_record(self, params):
+    def fetch_yfinance_record(self, multi_param_pairs):
         try:
-            symbol, start_date = params
+            symbol, start_date = multi_param_pairs
             # Fetch stock data using yfinance
             quote = yf.Ticker(symbol)
             current_date = date.today()
@@ -31,47 +44,45 @@ class YFinanceStageIngestion:
             record_list = [
                 tuple(row) + (symbol, self.import_time) for row in hist.itertuples(index=False)
             ]
+            
             return record_list
+        
         except Exception as e:
             print(f"Error fetching data for {symbol}: {e}")
             return []  # Return an empty list on error
     
     # Function to process the records (pass through parameters)
-    def process_yfinance_record(self, param):
-        print(f"Processing {param}")
-        return self.fetch_yfinance_record(param)
+    def process_yfinance_record(self, single_param_pair):
+        # print(f"Processing {single_param_pair}")
+        return self.fetch_yfinance_record(single_param_pair)
 
     # Parallel fetch function
-    def parallel_fetch(self, param_pairs):
+    def parallel_fetch(self, multi_param_pairs):        
         # Create Spark session
         spark = SparkSession.builder.appName("YahooFinanceData").getOrCreate()
         
         # Create RDD from the input parameter pairs
-        record_rdd = spark.sparkContext.parallelize(param_pairs)
+        record_rdd = spark.sparkContext.parallelize(multi_param_pairs)
         
         # Use flatMap to return a flattened list of records
         results_rdd = record_rdd.flatMap(self.process_yfinance_record)
         
-        # Collect the results from the RDD
-        results = results_rdd.collect()
-        return results
+        # Collect the results from the RDD and convert to a list of tuples
+        # results = results_rdd.collect()
+        
+        df = spark.createDataFrame(results_rdd, self.registered_column_list)   
+        df.show()
+        return df
 
 # List of stock symbols and start dates
-stock_param_pairs = [
+yf_param_pairs = [
     ('AAPL', '2024-12-10'),
     ('MSFT', '2024-12-10'),
     ('GOOGL', '2024-12-10'),
 ]
 
 # Instantiate the class
-stock_stage = YFinanceStageIngestion('stock', 'mytable')
+stock_stage = RawYFIngestion('stock', 'raw', 'raw.stock_eod_yfinance', 'registered_table_schemas.yaml')
 
 # Fetch data in parallel
-stock_data_rows = stock_stage.parallel_fetch(stock_param_pairs)
-
-# You can also load the result into a DataFrame if required
-from pyspark.sql import Row
-schema = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Dividends', 'Stock Splits', 'Ticker', 'ImportTime']
-rdd_rows = spark.sparkContext.parallelize(stock_data_rows)
-df = spark.createDataFrame(rdd_rows, schema)
-df.show()
+stock_data_rows = stock_stage.parallel_fetch(yf_param_pairs)

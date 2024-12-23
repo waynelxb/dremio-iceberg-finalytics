@@ -105,10 +105,10 @@ stock_stage = YFinanceStageIngestion('stock', 'mytable')
 # List of tickers to fetch
 stock_param_pairs = [("AAPL", "2024-12-1"), ("MSFT", "2024-12-5"), ("GOOGL", "2024-12-9")]  # Add more tickers as needed
 
-YFinanceStageIngestion.parallel_fetch(stock_param_pairs)
+
 
 # Fetch data in parallel
-stock_data_rows = parallel_fetch(stock_param_pairs)
+stock_data_rows = stock_stage.parallel_fetch(stock_param_pairs)
 
 # # Convert the data to a Spark DataFrame
 # stock_df = spark.createDataFrame(stock_data_rows, schema=schema)
