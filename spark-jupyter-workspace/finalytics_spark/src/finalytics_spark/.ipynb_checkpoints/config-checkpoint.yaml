@@ -1,20 +1,24 @@
-document_name: server_config
-database:
-  pool: 100
-  url: postgres://user:password@host:port/database
-    # logging:
-    #   file: /var/log/web-server.log
-    #   level: info
-    # server:
-    #   host: 0.0.0.0
-    #   port: 8080
-    # iceberg_env:
-    #   CATALOG_URI: "http://nessie:19120/api/v1"  # Nessie Server URI
-    #   WAREHOUSE: "s3://warehouse/"               # Minio Address to Write to
-    #   STORAGE_URI: "http://172.22.0.3:9000"      # Minio IP address from docker inspect
+document_name: iceberg_env
+catalog_uri: "http://nessie:19120/api/v1"  # Nessie Server URI
+warehouse: "s3://warehouse/"               # Minio Address to Write to
+storage_uri: "http://172.22.0.3:9000"      # Minio IP address from docker inspect
+
+# database:
+#   pool: 100
+#   url: postgres://user:password@host:port/database
+#     # logging:
+#     #   file: /var/log/web-server.log
+#     #   level: info
+#     # server:
+#     #   host: 0.0.0.0
+#     #   port: 8080
+#     # iceberg_env:
+#     #   CATALOG_URI: "http://nessie:19120/api/v1"  # Nessie Server URI
+#     #   WAREHOUSE: "s3://warehouse/"               # Minio Address to Write to
+#     #   STORAGE_URI: "http://172.22.0.3:9000"      # Minio IP address from docker inspect
 ---
 document_name: yfinance_stock
-column_list: ['date', 'open', 'high', 'low', 'close', 'volume', 'dividends', 'stock_splits', 'symbol', 'import_time']
+registered_column_list: ['date', 'open', 'high', 'low', 'close', 'volume', 'dividends', 'stock_splits', 'symbol', 'import_time']
 
 ---
 document_name: stage_stock_eod_quote_yfinance

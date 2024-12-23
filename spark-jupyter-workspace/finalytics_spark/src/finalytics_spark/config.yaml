@@ -18,7 +18,7 @@ storage_uri: "http://172.22.0.3:9000"      # Minio IP address from docker inspec
 #     #   STORAGE_URI: "http://172.22.0.3:9000"      # Minio IP address from docker inspect
 ---
 document_name: yfinance_stock
-column_list: ['date', 'open', 'high', 'low', 'close', 'volume', 'dividends', 'stock_splits', 'symbol', 'import_time']
+registered_column_list: ['date', 'open', 'high', 'low', 'close', 'volume', 'dividends', 'stock_splits', 'symbol', 'import_time']
 
 ---
 document_name: stage_stock_eod_quote_yfinance
