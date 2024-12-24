@@ -11,5 +11,6 @@ database:
     user: "postgres"
     password: "HDdimension1!"
     database: "finalytics"
+    driver: "org.postgresql.Driver" 
 
 
