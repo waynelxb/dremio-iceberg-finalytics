@@ -4,11 +4,7 @@ import yfinance as yf
 import yaml
 from datetime import date, datetime, timedelta
 from registered_tables import RegisteredTables
-
-
-# import psycopg2.extras
-# import psycopg2
-# from pgcopy import CopyManager
+import pyspark
 
 # Define the custom exception
 class MyCustomException(Exception):
@@ -17,7 +13,8 @@ class MyCustomException(Exception):
 # Main class for ingestion
 class RawYFIngestion:
     # Basic attributes of the class
-    def __init__(self, equity_type, zone, sink_table, config_file_path):
+    def __init__(self, spark, equity_type, zone, sink_table, config_file_path):
+        self.spark=spark
         self.equity_type = equity_type
         self.zone=zone
         self.sink_table = sink_table
@@ -51,38 +48,52 @@ class RawYFIngestion:
             print(f"Error fetching data for {symbol}: {e}")
             return []  # Return an empty list on error
     
-    # Function to process the records (pass through parameters)
-    def process_yfinance_record(self, single_param_pair):
-        # print(f"Processing {single_param_pair}")
-        return self.fetch_yfinance_record(single_param_pair)
+#     # Function to process the records (pass through parameters)
+#     def process_yfinance_record(self, single_param_pair):
+#         # print(f"Processing {single_param_pair}")
+#         return self.fetch_yfinance_record(single_param_pair)
 
-    # Parallel fetch function
-    def parallel_fetch(self, multi_param_pairs):        
-        # Create Spark session
-        spark = SparkSession.builder.appName("YahooFinanceData").getOrCreate()
+#     # Parallel fetch function
+#     def parallel_fetch(self, multi_param_pairs):        
+      
+#         # Create RDD from the input parameter pairs
+#         record_rdd = self.spark.sparkContext.parallelize(multi_param_pairs)
         
-        # Create RDD from the input parameter pairs
-        record_rdd = spark.sparkContext.parallelize(multi_param_pairs)
+#         # Use flatMap to return a flattened list of records
+#         results_rdd = record_rdd.flatMap(self.process_yfinance_record)
         
-        # Use flatMap to return a flattened list of records
-        results_rdd = record_rdd.flatMap(self.process_yfinance_record)
+#         # Collect the results from the RDD and convert to a list of tuples
+#         # results = results_rdd.collect()        
+#         df = self.spark.createDataFrame(results_rdd, self.registered_column_list)   
+#         df.show()
+#         return df
+ 
+    def parallel_fetch(self, multi_param_pairs):    
+        # Use the driver to fetch data
+        all_records = []  # Collect all results in a list
+        for pair in multi_param_pairs:
+            records = self.fetch_yfinance_record(pair)  # Fetch data on the driver
+            all_records.extend(records)
+            
+        # Parallelize the processed data
+        results_rdd = self.spark.sparkContext.parallelize(all_records)
         
         # Collect the results from the RDD and convert to a list of tuples
-        # results = results_rdd.collect()
-        
-        df = spark.createDataFrame(results_rdd, self.registered_column_list)   
+        # results = results_rdd.collect()        
+        df = self.spark.createDataFrame(results_rdd, self.registered_column_list)   
         df.show()
         return df
+    
 
-# List of stock symbols and start dates
-yf_param_pairs = [
-    ('AAPL', '2024-12-10'),
-    ('MSFT', '2024-12-10'),
-    ('GOOGL', '2024-12-10'),
-]
+# # List of stock symbols and start dates
+# yf_param_pairs = [
+#     ('AAPL', '2024-12-10'),
+#     ('MSFT', '2024-12-10'),
+#     ('GOOGL', '2024-12-10'),
+# ]
 
-# Instantiate the class
-stock_stage = RawYFIngestion('stock', 'raw', 'raw.stock_eod_yfinance', 'registered_table_schemas.yaml')
+# # Instantiate the class
+# stock_stage = RawYFIngestion('stock', 'raw', 'raw.stock_eod_yfinance', 'registered_table_schemas.yaml')
 
-# Fetch data in parallel
-stock_data_rows = stock_stage.parallel_fetch(yf_param_pairs)
+# # Fetch data in parallel
+# stock_data_rows = stock_stage.parallel_fetch(yf_param_pairs)

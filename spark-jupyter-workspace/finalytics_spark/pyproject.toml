@@ -13,6 +13,7 @@ yfinance = "^0.2.51"
 pyspark = "^3.5.4"
 pyyaml = "^6.0.2"
 jupyterlab-lsp = "^5.1.0"
+nbimporter = "^0.3.4"
 
 
 [build-system]

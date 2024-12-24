@@ -1,0 +1,17 @@
+tables:
+  iceberg.stock_eod_data:
+    schema:
+      - name: date
+        type: StringType
+        nullable: false
+      - name: open
+        type: FloatType
+        nullable: true
+      - name: close
+        type: FloatType
+        nullable: true
+      - name: volume
+        type: IntegerType
+        nullable: true
+    partition_by:
+      - field: date

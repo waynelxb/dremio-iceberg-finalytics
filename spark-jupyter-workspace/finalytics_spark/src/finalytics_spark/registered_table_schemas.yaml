@@ -1,5 +1,5 @@
-raw:
-  raw.stock_eod_yfinance:
+tables:
+  nessie.raw.stock_eod_yfinance:
     schema:
     - name: date
       type: StringType
