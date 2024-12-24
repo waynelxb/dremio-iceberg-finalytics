@@ -5,12 +5,11 @@ docker_env:
   storage_uri: "http://172.22.0.3:9000"      # Minio IP address from docker inspect
 
 database:
-  finalytics:
-    host: 
-    port:
-    username:
-    password:
-    database_name:
-    driver:
-    url:
+  postgresql:
+    host: "192.168.1.222"
+    port: "5432"
+    user: "postgres"
+    password: "HDdimension1!"
+    database: "finalytics"
+
 
