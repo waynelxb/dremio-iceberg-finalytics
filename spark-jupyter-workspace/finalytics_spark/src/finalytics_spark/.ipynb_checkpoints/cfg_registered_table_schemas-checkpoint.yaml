@@ -2,7 +2,7 @@ tables:
   nessie.raw.stock_eod_yfinance:
     schema:
     - name: date
-      type: StringType
+      type: DateType
       nullable: false
     - name: open
       type: FloatType
