@@ -1,3 +1,6 @@
+api: 
+  yfinance_stock: ['Open', 'High', 'Low', 'Close', 'Volume', 'Dividends', 'Stock Splits']
+
 tables:
   nessie.raw.stock_eod_yfinance:
     schema:
