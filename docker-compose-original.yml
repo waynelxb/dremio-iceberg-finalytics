@@ -93,54 +93,6 @@ services:
         ipv4_address: 172.22.0.4
 
 
-
-# Spark Worker 1
-spark-worker-1:
-  platform: linux/x86_64
-  image: alexmerced/spark35nb:latest
-  ports: 
-    - "8081-8099:8080"
-    - "7078-7099:7000"
-    # - 8080:8080    # Master Web UI
-    # - 7077:7077    # Master Port for job submissions
-    # - 8081:8081    # Worker Web UI
-    # - 4040-4045:4040-4045  # Additional Spark job UI ports for more jobs
-    # - 18080:18080  # Spark History Server
-    # - 8888:8888    # Jupyter Notebook
-  depends_on:
-    - spark
-  environment:
-    - AWS_REGION=us-east-1
-    - AWS_ACCESS_KEY_ID=admin  # Minio username
-    - AWS_SECRET_ACCESS_KEY=password  # Minio password
-    - SPARK_MODE=worker
-    - SPARK_MASTER_HOST=spark
-    - SPARK_MASTER_PORT=7077
-    - SPARK_MASTER_WEBUI_PORT=8080
-    - SPARK_WORKER_WEBUI_PORT=8081
-    - SPARK_WORKER_CORES=1
-    - SPARK_WORKER_MEMORY=1G
-    - SPARK_HISTORY_OPTS=-Dspark.history.fs.logDirectory=/tmp/spark-events
-    - SPARK_HOME=/opt/spark  # Set SPARK_HOME explicitly
-  volumes:
-    # - ./notebook-seed:/workspace/seed-data  # Volume for seeding data into the container
-    # - ./spark-jupyter-workspace:/workspace  # Volume for seeding data into the container
-    - ./target:/opt/spark-apps
-    - ./conf/worker:/conf
-  container_name: spark
-  entrypoint: >
-    /bin/bash -c "
-    /opt/spark/sbin/start-master.sh && \
-    /opt/spark/sbin/start-worker.sh spark://$(hostname):7077 && \
-    mkdir -p /tmp/spark-events && \
-    start-history-server.sh && \
-    jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root --NotebookApp.token='' --NotebookApp.password='' && \
-    tail -f /dev/null
-    "
-  networks:
-    intro-network:
-
-
   # Dremio
   dremio:
     platform: linux/x86_64
