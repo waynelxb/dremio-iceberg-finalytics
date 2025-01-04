@@ -5,6 +5,7 @@ import yaml
 from datetime import date, datetime, timedelta
 from registered_tables import RegisteredTables
 import pyspark
+import time
 
 # Define the custom exception
 class MyCustomException(Exception):
@@ -41,6 +42,9 @@ class RawYFIngestion:
             record_list = [
                 tuple(row) + (symbol, self.import_time) for row in hist.itertuples(index=False)
             ]
+            random_sleep_time = random.randint(0.1, 1)
+            time.sleep(random_sleep_time)
+            print(record_list)
             
             return record_list
         

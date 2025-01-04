@@ -1,3 +1,4 @@
+# This is the docker-compose file based on https://www.dremio.com/blog/hands-on-with-apache-iceberg-nessie-dremio-apache-spark/
 version: "3.7"
 
 services:
@@ -57,7 +58,11 @@ services:
   # Spark
   spark:
     platform: linux/x86_64
-    image: alexmerced/spark35nb:latest
+    # Original image
+    # image: alexmerced/spark35nb
+
+    # spark35nb-poetry is created with spark35nb-poetry.Dockerfile 
+    image: spark35nb-poetry    
     ports: 
       - 8080:8080    # Master Web UI
       - 7077:7077    # Master Port for job submissions

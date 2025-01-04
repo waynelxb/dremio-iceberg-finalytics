@@ -1,3 +1,7 @@
+# nessie-finalytics, minio-finalytics, dremio-finalytics are created with the commit on containers created with 
+# docker-compose-dremio.yml in the folder, docker. 
+# spark35nb-poetry is created based on spark35nb-poetry.Dockerfile in the folder, docker
+
 version: "3.7"
 
 services:
