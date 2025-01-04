@@ -1,0 +1,36 @@
+tables:
+  nessie.raw.stock_eod_yfinance:
+    schema:
+    - name: date
+      type: DateType
+      nullable: false
+    - name: open
+      type: FloatType
+      nullable: true
+    - name: high
+      type: FloatType
+      nullable: true
+    - name: low
+      type: FloatType
+      nullable: true
+    - name: close
+      type: FloatType
+      nullable: true
+    - name: volume
+      type: IntegerType
+      nullable: true
+    - name: dividends
+      type: FloatType
+      nullable: true
+    - name: stock_splits
+      type: FloatType
+      nullable: true
+    - name: symbol
+      type: StringType
+      nullable: false
+    - name: import_time
+      type: StringType
+      nullable: false
+    # partition_by:
+    # # Optional partitioning
+    # - field: date

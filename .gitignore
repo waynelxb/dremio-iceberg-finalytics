@@ -1,2 +1,6 @@
 minio-volume/.minio.sys/
-
+minio-volume/warehouse/
+minio-volume/seed/
+*.meta
+minio-volume/seed/test.csv/xl.meta
+minio-volume/seed/test.csv/xl.meta

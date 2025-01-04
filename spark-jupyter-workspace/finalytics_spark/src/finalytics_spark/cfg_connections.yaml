@@ -1,0 +1,17 @@
+docker_env: 
+  description: "This is for nessie catalog"
+  catalog_uri: "http://nessie:19120/api/v1"  # Nessie Server URI
+  warehouse: "s3://warehouse/"               # Minio Address to Write to
+  storage_uri: "http://172.22.0.3:9000"      # Minio IP address from docker inspect
+
+databases:
+  postgresql:
+    finalytics:
+      host: "192.168.1.222"
+      port: "5432"
+      user: "postgres"
+      password: "HDdimension1!"
+      database: "finalytics"
+      driver: "org.postgresql.Driver" 
+
+
