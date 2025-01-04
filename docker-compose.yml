@@ -57,7 +57,7 @@ services:
   # Spark
   spark:
     platform: linux/x86_64
-    image: spark-finalytics:latest
+    image: spark35nb-poetry:latest
     ports: 
       - 8080:8080    # Master Web UI
       - 7077:7077    # Master Port for job submissions
