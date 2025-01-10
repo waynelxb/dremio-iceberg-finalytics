@@ -56,48 +56,48 @@ def create_spark_session(config_file, app_name)->SparkSession:
 
 
 
-def insert_iceberg_data_into_pg(conn_config_file, iceberg_source_table, pg_database, pg_sink_table, is_pg_truncate_enabled, is_pg_merge_enabled):   
-    try:    
-        df_source=spark.read.table(iceberg_source_table)          
+# def insert_iceberg_data_into_pg(conn_config_file, iceberg_source_table, pg_database, pg_sink_table, is_pg_truncate_enabled, is_pg_merge_enabled):   
+#     try:    
+#         df_source=spark.read.table(iceberg_source_table)          
 
-        pg_db_mgr=PgDBManager(conn_config_file, pg_database)
-        pg_url=pg_db_mgr.jdbc_url
-        pg_driver=pg_db_mgr.driver
+#         pg_db_mgr=PgDBManager(conn_config_file, pg_database)
+#         pg_url=pg_db_mgr.jdbc_url
+#         pg_driver=pg_db_mgr.driver
 
-        if is_pg_truncate_enabled == True:
-            pg_truncate_script=f"TRUNCATE TABLE {pg_sink_table}"
-            pg_db_mgr.execute_sql_script(pg_truncate_script)
+#         if is_pg_truncate_enabled == True:
+#             pg_truncate_script=f"TRUNCATE TABLE {pg_sink_table}"
+#             pg_db_mgr.execute_sql_script(pg_truncate_script)
         
-        # Write DataFrame to PostgreSQL
-        df_source.write.jdbc(url=pg_url, table=pg_sink_table, mode="append", properties={"driver": pg_driver}) 
+#         # Write DataFrame to PostgreSQL
+#         df_source.write.jdbc(url=pg_url, table=pg_sink_table, mode="append", properties={"driver": pg_driver}) 
 
-        if is_pg_merge_enabled == True:
-            pg_merge_script = "call fin.usp_load_stock_eod();"
-            pg_db_mgr.execute_sql_script(pg_merge_script)
+#         if is_pg_merge_enabled == True:
+#             pg_merge_script = "call fin.usp_load_stock_eod();"
+#             pg_db_mgr.execute_sql_script(pg_merge_script)
             
-    except Exception as e:
-        print(f"Error loading pg finalytics: {e}") 
+#     except Exception as e:
+#         print(f"Error loading pg finalytics: {e}") 
 
 
 
-def insert_into_iceberg_table(schema_config_file, spark_source_df, iceberg_sink_table):
-    try: 
-        schema_manager=SchemaManager(schema_config_file)
-        schema_struct_type=schema_manager.get_struct_type("tables", iceberg_sink_table)  
+# def insert_into_iceberg_table(schema_config_file, spark_source_df, iceberg_sink_table):
+#     try: 
+#         schema_manager=SchemaManager(schema_config_file)
+#         schema_struct_type=schema_manager.get_struct_type("tables", iceberg_sink_table)  
         
-        create_table_script = schema_manager.get_create_table_query("tables", iceberg_sink_table)
-        spark.sql(create_table_script)
+#         create_table_script = schema_manager.get_create_table_query("tables", iceberg_sink_table)
+#         spark.sql(create_table_script)
      
-        spark_source_df.writeTo(iceberg_sink_table).append()
-        # source_spark_df.write.mode("overwrite").saveAsTable(iceberg_sink_table) 
+#         spark_source_df.writeTo(iceberg_sink_table).append()
+#         # source_spark_df.write.mode("overwrite").saveAsTable(iceberg_sink_table) 
 
-        incremental_count=spark_source_df.count()
-        total_count=spark.table(iceberg_sink_table).count()
+#         incremental_count=spark_source_df.count()
+#         total_count=spark.table(iceberg_sink_table).count()
 
-        print(f"{iceberg_sink_table} was loaded with {incremental_count} records, totally {total_count} records.")
+#         print(f"{iceberg_sink_table} was loaded with {incremental_count} records, totally {total_count} records.")
         
-    except Exception as e:
-        print(f"Error loading lceberg raw table: {e}")
+#     except Exception as e:
+#         print(f"Error loading lceberg raw table: {e}")
 
 
 

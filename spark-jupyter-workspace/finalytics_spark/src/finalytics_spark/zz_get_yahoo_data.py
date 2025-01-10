@@ -9,8 +9,8 @@ from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType, DoubleType,  DateType, TimestampType
 from pyspark.sql.functions import to_date, to_timestamp
 from lab_database_manager import PgDBManager
-from lab_spark import create_spark_session
-from lab_schema_manager import SchemaManager
+from zz_spark import create_spark_session
+from zz_schema_manager import SchemaManager
 from zz_raw_yahoo import get_raw_yahooquery, get_raw_yfinance
 from collections import defaultdict
 import warnings
@@ -64,13 +64,6 @@ def insert_into_iceberg_table(schema_config_file, spark_source_df, iceberg_sink_
 
 
 
-
-
-
-
-
-
-
 # Get finalytics connetion info
 conn_config_file='cfg_connections.yaml'
 pg_db="finalytics"
@@ -99,16 +92,40 @@ for group, group_symbols in grouped_symbols.items():
     # hist_data=get_raw_yfinance(group_symbols, group_start_date, import_time)
     hist_group_data_frame=get_raw_yahooquery(group_symbols, group_start_date, import_time)    
     hist_data_frames.append(hist_group_data_frame)
-    time.sleep(5)
+    time.sleep(1)
 combined_hist_data = pd.concat(hist_data_frames, ignore_index=True)
 
 # # Print final combined_data
 # print(combined_hist_data)
 
+
+
+# Create Spark Session
+spark_app_name="raw_yfinance"
+spark=create_spark_session(conn_config_file, spark_app_name)
 hist_spark_df = spark.createDataFrame(combined_hist_data)    
+
+
+
+# Get iceberg table config info
+schema_config_file='cfg_schemas.yaml'
+iceberg_raw_stock_eod_table='nessie.raw.stock_eod_yahooquery'
+
+# Check if the Iceberg table exists and truncate it if it does
+if spark.catalog.tableExists(iceberg_raw_stock_eod_table):
+    spark.sql(f"TRUNCATE TABLE {iceberg_raw_stock_eod_table}")
+    print(f"Iceberg table {iceberg_raw_stock_eod_table} truncated successfully.")
+else:
+    print(f"Iceberg table {iceberg_raw_stock_eod_table} does not exist.")
+
 insert_into_iceberg_table(schema_config_file, hist_spark_df, iceberg_raw_stock_eod_table)
 
 
+
+pg_table='stage.stock_eod_quote_yahoo'
+is_pg_truncate_enabled=True
+is_pg_merge_enabled=True
+insert_iceberg_data_into_pg(conn_config_file, iceberg_raw_stock_eod_table, pg_db, pg_table, is_pg_truncate_enabled, is_pg_merge_enabled)  
 
 
 
