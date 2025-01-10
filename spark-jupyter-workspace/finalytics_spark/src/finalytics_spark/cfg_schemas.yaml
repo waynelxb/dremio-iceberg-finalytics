@@ -37,3 +37,33 @@ tables:
     # partition_by:
     # # Optional partitioning
     # - field: date
+
+  nessie.raw.stock_eod_yahooquery:
+    schema:
+    - name: date
+      type: DateType
+      nullable: false
+    - name: symbol
+      type: StringType
+      nullable: false
+    - name: open
+      type: FloatType
+      nullable: true
+    - name: high
+      type: FloatType
+      nullable: true
+    - name: low
+      type: FloatType
+      nullable: true
+    - name: close
+      type: FloatType
+      nullable: true
+    - name: volume
+      type: IntegerType
+      nullable: true
+    - name: import_time
+      type: StringType
+      nullable: false
+    # partition_by:
+    # # Optional partitioning
+    # - field: date
