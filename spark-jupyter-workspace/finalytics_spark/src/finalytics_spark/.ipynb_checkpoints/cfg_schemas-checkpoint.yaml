@@ -22,12 +22,6 @@ tables:
     - name: volume
       type: IntegerType
       nullable: true
-    - name: dividends
-      type: FloatType
-      nullable: true
-    - name: stock_splits
-      type: FloatType
-      nullable: true
     - name: symbol
       type: StringType
       nullable: false
