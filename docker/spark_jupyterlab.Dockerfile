@@ -1,38 +1,54 @@
-# Use the official Ubuntu base image
-FROM ubuntu:22.04
+# Use Python 3.11 base image with Debian Bullseye
+ARG python_version=3.11
+FROM python:${python_version}-bullseye
 
-# Set environment variables
-ENV SPARK_VERSION=3.5.2 \
+# Set the default Shell to bash and some environment variables # 
+# /usr/lib/jvm/java-11-openjdk-amd64 is where openjdk will be installed by default. This folder will be created when installing openjdk
+# /opt/spark is where spark will be installed. This folder will will be created when install spark
+ENV SHELL=/bin/bash \
+    SHARED_WORKSPACE=/opt/workspace \
+    SPARK_VERSION=3.5.2 \
     HADOOP_VERSION=3 \
-    PYTHON_VERSION=3.10
+    PYTHON_VERSION=${python_version} \
+    JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64 \
+    SPARK_HOME=/opt/spark \
+    PATH=$JAVA_HOME/bin:$SPARK_HOME/bin:$SPARK_HOME/sbin:$PATH
+    
 
-# Install dependencies
-RUN apt-get update && \
-    apt-get install -y openjdk-11-jdk wget curl python${PYTHON_VERSION} python${PYTHON_VERSION}-dev python3-pip && \
-    apt-get clean
+# Create shared workspace and set as working directory
+RUN mkdir -p ${SHARED_WORKSPACE}
+WORKDIR ${SHARED_WORKSPACE}
+VOLUME ${SHARED_WORKSPACE}
 
-# Set JAVA_HOME environment variable
-ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
-ENV PATH=$JAVA_HOME/bin:$PATH
+
+# Install essential tools and dependencies
+RUN apt-get update -y --fix-missing && \
+    apt-get install -y --no-install-recommends \
+        sudo \
+        curl \
+        vim \
+        unzip \
+        rsync \
+        nano \
+        openjdk-11-jdk \
+        build-essential \
+        software-properties-common \
+        ssh && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 
 # Install Spark
-# This is the valild archival from 3.5.2 https://archive.apache.org/dist/spark/
-# https://archive.apache.org/dist/spark/spark-3.5.2/spark-3.5.2-bin-hadoop3.tgz
+# archival link https://archive.apache.org/dist/spark/
 RUN wget https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz && \
     tar -xvzf spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz && \
-    mv spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION} /opt/spark && \
+    mv spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION} ${SPARK_HOME} && \
     rm spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz
 
-# Set Spark environment variables
-ENV SPARK_HOME=/opt/spark
-ENV PATH=$SPARK_HOME/bin:$SPARK_HOME/sbin:$PATH
-
-@ Set default Shell to bash
-ENV SHELL=/bin/bash
 
 # Install Poetry
 ENV POETRY_HOME=/root/.local
-ENV PATH="$POETRY_HOME/bin:$PATH"
+ENV PATH=$POETRY_HOME/bin:$PATH
 RUN curl -sSL https://install.python-poetry.org | python3 - && \
     # The following also works, but /root/.bashrc is only sourced by bash shell.
     # echo 'export PATH=$PATH:$POETRY_HOME/bin' >> /root/.bashrc
@@ -43,7 +59,7 @@ RUN curl -sSL https://install.python-poetry.org | python3 - && \
     poetry config virtualenvs.in-project true
 
 
-# Upgrade Pip
+# Upgrade pip
 RUN pip3 install --upgrade pip 
 
 # Install Python Libraries
@@ -82,46 +98,13 @@ RUN pip install --no-cache-dir \
     boto3 \
     s3fs \
     minio \
-    poetry-kernel
-
-# more libraries
-RUN pip install --no-cache-dir \
+    poetry-kernel \
+    datafusion \
     pyiceberg[gcsfs,adlfs,s3fs,sql-sqlite,sql-postgres,glue,hive]
 
-# Even More Libraries
-RUN pip install --no-cache-dir \
-    datafusion
-
-# Expose Jupyter Notebook port
-EXPOSE 8888
-
-# Expose Spark ports
-# Spark Web UI
-EXPOSE 4040  
-# Spark Standalone Mode Cluster Manager
-EXPOSE 7077  
-# Spark History Server
-EXPOSE 8080  
-# Spark History Server (alternative port)
-EXPOSE 18080 
-# Spark Standalone Mode REST Server
-EXPOSE 6066  
-# Spark Worker Web UI
-EXPOSE 7078  
-# Spark Master Web UI
-EXPOSE 8081  
-
-# Create a working directory
-WORKDIR /workspace
-
-# Set Spark environment variables
-# ENV SPARK_HOME=/opt/spark
-# ENV PATH=$SPARK_HOME/bin:$SPARK_HOME/sbin:$PATH
 
 # Set umask globally by adding it to the entrypoint
 RUN echo "umask 000" >> /etc/profile
-
-
 
 # Start Spark Master, Worker, and JupyterLab
 CMD bash -c "source /etc/profile && \
