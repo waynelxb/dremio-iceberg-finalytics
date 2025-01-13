@@ -56,14 +56,10 @@ services:
         ipv4_address: 172.22.0.3
 
   # Spark
-  spark:
+  spark-jupyterlab:
     platform: linux/x86_64
-    # Original image
-    # image: alexmerced/spark35nb
-
-    # spark35nb-poetry is created with spark35nb-poetry.Dockerfile 
-    # image: spark35nb-poetry
-    image: spark-jupyterlab   
+    # image: spark35nb-poetry:latest
+    image: spark-jupyterlab:latest    
     ports: 
       - 8080:8080    # Master Web UI
       - 7077:7077    # Master Port for job submissions
@@ -82,9 +78,12 @@ services:
       - SPARK_HISTORY_OPTS=-Dspark.history.fs.logDirectory=/tmp/spark-events
       - SPARK_HOME=/opt/spark  # Set SPARK_HOME explicitly
     volumes:
-      # - ./notebook-seed:/workspace/seed-data  # Volume for seeding data into the container
       - ./workspace:/opt/workspace  # Volume for seeding data into the container
-    container_name: spark
+    # $(hostname) is container name, spark-jupyterlab, which is the same as service name
+    # If you don't set a container_name, Docker will use the service name from the docker-compose.yml file as the hostname.
+    # If you intend for Spark components to communicate using the service name, like for dependency,
+    # you should use that explicitly instead of $(hostname). For example: /opt/spark/sbin/start-worker.sh spark://{service_name}:7077
+    container_name: spark-jupyterlab
     entrypoint: >
       /bin/bash -c "
       /opt/spark/sbin/start-master.sh && \
@@ -92,6 +91,7 @@ services:
       /opt/spark/sbin/start-history-server.sh && \
       mkdir -p /tmp/spark-events && \      
       jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root --NotebookApp.token='' --NotebookApp.password='' && \
+      curl -sSL https://install.python-poetry.org | python3 - && \
       tail -f /dev/null
       "
     networks:

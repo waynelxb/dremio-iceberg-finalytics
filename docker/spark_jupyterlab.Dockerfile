@@ -65,6 +65,8 @@ RUN pip3 install --upgrade pip
 # Install Python Libraries
 RUN pip install --no-cache-dir \
     jupyterlab \
+    # Since poetry 2.0.0, the shell is a poetry-plugin
+    poetry-plugin-shell \
     scipy \
     findspark \
     getdaft[all] \
