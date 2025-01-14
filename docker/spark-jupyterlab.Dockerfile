@@ -56,7 +56,8 @@ RUN curl -sSL https://install.python-poetry.org | python3 - && \
     # Add it to /etc/profile, the setting can be used for sh (the default JupyterLab container interactive shell) and bash.     
     echo 'export PATH=$PATH:$POETRY_HOME/bin' >> /etc/profile && \
 # Create poetry env within project 
-    poetry config virtualenvs.in-project true
+    poetry config virtualenvs.in-project true  
+
 
 
 # Upgrade pip
@@ -64,20 +65,41 @@ RUN pip3 install --upgrade pip
 
 # Install Python Libraries
 RUN pip install --no-cache-dir \
+    # pyspark 
+    pyspark==${SPARK_VERSION} \
+    findspark \
+    # jupyter
     jupyterlab \
+    notebook \
+    ipywidgets \
     # Since poetry 2.0.0, the shell is a poetry-plugin
     poetry-plugin-shell \
-    scipy \
-    findspark \
-    getdaft[all] \
-    sqlframe[all] \
-    ipywidgets \
-    ibis-framework[all] \
-    notebook \
+    poetry-kernel \
+    # database
+    sqlalchemy \
+    psycopg2-binary \
+    # data processing   
     pandas \
     numpy \
+    datafusion \
+    getdaft[all] \
+    sqlframe[all] \
+    ibis-framework[all] \
+    scipy \
     matplotlib \
     seaborn \
+    pyarrow \
+    requests \
+    beautifulsoup4 \
+    lxml \
+    duckdb \
+    polars \
+    # dremio, minio, iceberg    
+    dremio-simple-query \
+    boto3 \
+    s3fs \
+    minio \
+    pyiceberg[gcsfs,adlfs,s3fs,sql-sqlite,sql-postgres,glue,hive]
     # scikit-learn \
     # tensorflow \
     # torch \
@@ -87,29 +109,21 @@ RUN pip install --no-cache-dir \
     # statsmodels \
     # plotly \
     # openpyxl \
-    pyarrow \
-    sqlalchemy \
-    psycopg2-binary \
-    requests \
-    beautifulsoup4 \
-    lxml \
-    duckdb \
-    polars \
-    pyspark==3.5.2 \
-    dremio-simple-query \
-    boto3 \
-    s3fs \
-    minio \
-    poetry-kernel \
-    datafusion \
-    pyiceberg[gcsfs,adlfs,s3fs,sql-sqlite,sql-postgres,glue,hive]
-
 
 # Set umask globally by adding it to the entrypoint
 RUN echo "umask 000" >> /etc/profile
 
-# Start Spark Master, Worker, and JupyterLab
+
+# The CMD instruction in a Dockerfile only runs when the container is started. 
+# It defines the default command that will be executed when the container starts, unless it is overridden by entrypoint specified in docker-compose file at runtime.
+# CMD below ensures that Spark services, the History Server, and JupyterLab are launched in sequence.
 CMD bash -c "source /etc/profile && \
     $SPARK_HOME/sbin/start-master.sh && \
+    # $(hostname) is container name, spark-jupyterlab. If container name is not specified, it will be the service name.
+    # So if you intend for Spark components to communicate using the service name in your docker-compose, like for dependency, be careful when using these names
+    # And to make it simple, you can make container name the same as corresponding service name, or you should use the name explicitly instead of $(hostname). 
     $SPARK_HOME/sbin/start-worker.sh spark://$(hostname):7077 && \
+    # keep the mkdir -p /tmp/spark-events command in the container's startup sequence to ensure the Spark History Server functions properly.
+    mkdir -p /tmp/spark-events && \ 
+    $SPARK_HOME/sbin/start-history-server.sh && \     
     jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root --NotebookApp.token='' --NotebookApp.password=''"
