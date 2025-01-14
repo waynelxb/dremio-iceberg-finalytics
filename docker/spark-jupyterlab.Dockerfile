@@ -82,25 +82,25 @@ RUN pip install --no-cache-dir \
     # data processing   
     pandas \
     numpy \
-    datafusion \
-    getdaft[all] \
     sqlframe[all] \
-    ibis-framework[all] \
-    scipy \
+    ibis-framework[all] \  
     matplotlib \
-    seaborn \
-    pyarrow \
     requests \
     beautifulsoup4 \
     lxml \
-    duckdb \
-    polars \
     # dremio, minio, iceberg    
     dremio-simple-query \
     boto3 \
     s3fs \
     minio \
     pyiceberg[gcsfs,adlfs,s3fs,sql-sqlite,sql-postgres,glue,hive]
+    # pyarrow \
+    # datafusion \ 
+    # polars \
+    # getdaft[all] \
+    # scipy \
+    # duckdb \
+    # seaborn \
     # scikit-learn \
     # tensorflow \
     # torch \
@@ -111,7 +111,7 @@ RUN pip install --no-cache-dir \
     # plotly \
     # openpyxl \
 
-    
+
 # Enable the Jupyter Scheduler
 RUN jupyter server extension list && \
     jupyter server extension enable --user --py jupyter_scheduler    
