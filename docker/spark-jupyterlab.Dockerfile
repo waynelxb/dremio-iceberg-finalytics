@@ -70,6 +70,7 @@ RUN pip install --no-cache-dir \
     findspark \
     # jupyter
     jupyterlab \
+    jupyter_scheduler \
     notebook \
     ipywidgets \
     # Since poetry 2.0.0, the shell is a poetry-plugin
@@ -109,6 +110,11 @@ RUN pip install --no-cache-dir \
     # statsmodels \
     # plotly \
     # openpyxl \
+
+    
+# Enable the Jupyter Scheduler
+RUN jupyter server extension list && \
+    jupyter server extension enable --user --py jupyter_scheduler    
 
 # Set umask globally by adding it to the entrypoint
 RUN echo "umask 000" >> /etc/profile
