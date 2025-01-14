@@ -59,7 +59,6 @@ RUN curl -sSL https://install.python-poetry.org | python3 - && \
     poetry config virtualenvs.in-project true  
 
 
-
 # Upgrade pip
 RUN pip3 install --upgrade pip 
 
@@ -82,25 +81,25 @@ RUN pip install --no-cache-dir \
     # data processing   
     pandas \
     numpy \
+    datafusion \
+    getdaft[all] \
     sqlframe[all] \
-    ibis-framework[all] \  
+    ibis-framework[all] \
+    scipy \
     matplotlib \
+    seaborn \
+    pyarrow \
     requests \
     beautifulsoup4 \
     lxml \
+    duckdb \
+    polars \
     # dremio, minio, iceberg    
     dremio-simple-query \
     boto3 \
     s3fs \
     minio \
     pyiceberg[gcsfs,adlfs,s3fs,sql-sqlite,sql-postgres,glue,hive]
-    # pyarrow \
-    # datafusion \ 
-    # polars \
-    # getdaft[all] \
-    # scipy \
-    # duckdb \
-    # seaborn \
     # scikit-learn \
     # tensorflow \
     # torch \
@@ -110,6 +109,10 @@ RUN pip install --no-cache-dir \
     # statsmodels \
     # plotly \
     # openpyxl \
+
+# # more libraries
+# RUN pip install --no-cache-dir \
+#     pyiceberg[gcsfs,adlfs,s3fs,sql-sqlite,sql-postgres,glue,hive]
 
 
 # Enable the Jupyter Scheduler
