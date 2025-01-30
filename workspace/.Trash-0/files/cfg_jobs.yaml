@@ -1,0 +1,36 @@
+jobs:
+  load_yahoo_records_common_settings: &common
+    job_parameters:
+      yahoo_api: "yahooquery"  # The Yahoo API to use for fetching data
+      symbols_per_group: 100   # Number of symbols in each group to fetch
+      connection_config_file: "config/cfg_connections.yaml"  # Path to connection config
+      schema_config_file: "config/cfg_schemas.yaml"          # Path to schema config
+      
+  load_yahoo_etf_eod_records:
+    # Job parameters for the LoadYahooEOD class
+    job_parameters:
+      <<: *common  # Merge the common job parameters
+      equity_type: "etf"       # Type of equity (e.g., "etf", "stock")
+      spark_app_name: "spark_yahoo_etf_eod"  # Name of the Spark application
+
+
+      
+  # load_yahoo_etf_eod_records:    
+  #   # Job parameters for the LoadYahooEOD class
+  #   job_parameters:
+  #     yahoo_api: "yahooquery"  # The Yahoo API to use for fetching data
+  #     equity_type: "etf"       # Type of equity (e.g., "etf", "stock")
+  #     symbols_per_group: 100    # Number of symbols in each group to fetch
+  #     connection_config_file: "config/cfg_connections.yaml"  # Path to connection config
+  #     schema_config_file: "config/cfg_schemas.yaml"          # Path to schema config
+  #     spark_app_name: "spark_yahoo_etf_eod"  # Name of the Spark application
+
+  # load_yahoo_stock_eod_records:    
+  #   # Job parameters for the LoadYahooEOD class
+  #   job_parameters:
+  #     yahoo_api: "yahooquery"  # The Yahoo API to use for fetching data
+  #     equity_type: "stock"       # Type of equity (e.g., "etf", "stock")
+  #     symbols_per_group: 100    # Number of symbols in each group to fetch
+  #     connection_config_file: "config/cfg_connections.yaml"  # Path to connection config
+  #     schema_config_file: "config/cfg_schemas.yaml"          # Path to schema config
+  #     spark_app_name: "spark_yahoo_stock_eod"  # Name of the Spark application

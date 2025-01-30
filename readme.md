@@ -86,3 +86,12 @@ Ensure that the appropriate ports (listed above) are open and not blocked by fir
 The services will run in a shared Docker network called intro-network, allowing them to communicate with each other.
 
 For persistent data storage, ensure the mounted directories (./nessie-data, ./minio-data, ./notebook-seed) exist on your local machine.
+
+## Superset
+https://github.com/developer-advocacy-dremio/quick-guides-from-dremio/blob/main/guides/superset-dremio.md
+https://www.youtube.com/watch?v=EcvAv9IF_eI
+1. run 
+  docker-compose up
+2. run 
+  docker-compose exec superset superset init
+  docker-compose exec superset{this is container namer} superset{this is command} init

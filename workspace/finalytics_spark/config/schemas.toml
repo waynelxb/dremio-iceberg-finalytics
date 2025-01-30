@@ -1,0 +1,30 @@
+[api]
+yfinance_stock = ["Open", "High", "Low", "Close", "Volume", "Dividends", "Stock Splits"]
+
+[[tables.nessie.raw]]
+name = "stock_eod_yahoo"
+schema = [
+    { name = "date", type = "DateType", nullable = false },
+    { name = "symbol", type = "StringType", nullable = false },
+    { name = "open", type = "FloatType", nullable = true },
+    { name = "high", type = "FloatType", nullable = true },
+    { name = "low", type = "FloatType", nullable = true },
+    { name = "close", type = "FloatType", nullable = true },
+    { name = "volume", type = "IntegerType", nullable = true },
+    { name = "import_time", type = "StringType", nullable = false }
+    # partition_by = [ { field = "date" } ]  # Optional partitioning
+]
+
+[[tables.nessie.raw]]
+name = "etf_eod_yahoo"
+schema = [
+    { name = "date", type = "DateType", nullable = false },
+    { name = "symbol", type = "StringType", nullable = false },
+    { name = "open", type = "FloatType", nullable = true },
+    { name = "high", type = "FloatType", nullable = true },
+    { name = "low", type = "FloatType", nullable = true },
+    { name = "close", type = "FloatType", nullable = true },
+    { name = "volume", type = "IntegerType", nullable = true },
+    { name = "import_time", type = "StringType", nullable = false }
+    # partition_by = [ { field = "date" } ]  # Optional partitioning
+]

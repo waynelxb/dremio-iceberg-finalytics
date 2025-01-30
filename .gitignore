@@ -4,3 +4,5 @@ minio-volume/seed/
 *.meta
 minio-volume/seed/test.csv/xl.meta
 minio-volume/seed/test.csv/xl.meta
+postgres_data/
+

@@ -3,8 +3,7 @@ import yaml
 import pyspark
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType, DoubleType
-from raw_yfinance_ingestion import RawYFIngestion
-from xx import MyModel
+from .zz_database_manager import PgDBManager
 
 def main():    
     with open("environment.yaml","r") as file_object:
@@ -44,17 +43,7 @@ def main():
             .set('spark.sql.catalog.nessie.io-impl', 'org.apache.iceberg.aws.s3.S3FileIO')       
     )   
     
-    # Start Spark session
-    spark = SparkSession.builder.config(conf=conf).getOrCreate()   
 
-    raw_eod_yfinance = RawYFIngestion(spark, 'stock', 'raw', 'raw.stock_eod_yfinance', 'registered_table_schemas.yaml')
-    yf_param_pairs = [
-        ('AAPL', '2024-12-10'),
-        ('MSFT', '2024-12-10'),
-        ('GOOGL', '2024-12-10'),
-    ]
-   
-    raw_eod_yfinance.parallel_fetch(yf_param_pairs)
 
 if __name__=="__main__":
     main()

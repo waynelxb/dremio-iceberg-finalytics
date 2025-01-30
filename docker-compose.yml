@@ -20,7 +20,7 @@ services:
       - "19120:19120"  # Expose Nessie API port
     networks:
       intro-network:
-        ipv4_address: 172.22.0.2
+        ipv4_address: 172.22.0.10
 
   # Minio Storage Server
   minio:
@@ -56,7 +56,7 @@ services:
       tail -f /dev/null"
     networks:
       intro-network:
-        ipv4_address: 172.22.0.3
+        ipv4_address: 172.22.0.20
 
   # Spark
   spark-jupyterlab:
@@ -70,6 +70,7 @@ services:
       - 18080:18080  # Spark History Server
       - 8888:8888    # Jupyter Notebook
     environment:
+      - TZ=America/Chicago
       - AWS_REGION=us-east-1
       - AWS_ACCESS_KEY_ID=admin  # Minio username
       - AWS_SECRET_ACCESS_KEY=password  # Minio password
@@ -84,7 +85,7 @@ services:
     container_name: spark-jupyterlab
     networks:
       intro-network:
-        ipv4_address: 172.22.0.4
+        ipv4_address: 172.22.0.30
 
   # Dremio
   dremio:
@@ -100,7 +101,17 @@ services:
       - DREMIO_JAVA_SERVER_EXTRA_OPTS=-Dpaths.dist=file:///opt/dremio/data/dist
     networks:
       intro-network:
-        ipv4_address: 172.22.0.5
+        ipv4_address: 172.22.0.40
+
+  superset:
+    # image: alexmerced/dremio-superset
+    image: superset-dashboard
+    container_name: superset-dashboard
+    ports:
+      - 18088:8088
+    networks:
+      intro-network:
+        ipv4_address: 172.22.0.50
 
 networks:
   intro-network:

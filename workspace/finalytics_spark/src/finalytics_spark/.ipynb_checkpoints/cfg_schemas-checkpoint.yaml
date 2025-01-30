@@ -2,10 +2,13 @@ api:
   yfinance_stock: ['Open', 'High', 'Low', 'Close', 'Volume', 'Dividends', 'Stock Splits']
 
 tables:
-  nessie.raw.stock_eod_yfinance:
+  nessie.raw.stock_eod_yahoo:
     schema:
     - name: date
       type: DateType
+      nullable: false
+    - name: symbol
+      type: StringType
       nullable: false
     - name: open
       type: FloatType
@@ -22,9 +25,6 @@ tables:
     - name: volume
       type: IntegerType
       nullable: true
-    - name: symbol
-      type: StringType
-      nullable: false
     - name: import_time
       type: StringType
       nullable: false
@@ -32,7 +32,7 @@ tables:
     # # Optional partitioning
     # - field: date
 
-  nessie.raw.stock_eod_yahooquery:
+  nessie.raw.etf_eod_yahoo:
     schema:
     - name: date
       type: DateType
