@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Dict, Any
 import yaml
 import argparse
-from yahoo_records.load_yahoo_eod import LoadYahooEOD
+from yahoo_records.curated_yahoo_data_ingester import CuratedYahooDataIngester
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -49,15 +49,18 @@ def main(job_name: str):
         job_params = config["jobs"][job_name]["job_parameters"]
 
         # Initialize and run the job
-        my_job = LoadYahooEOD(
-            yahoo_api=job_params["yahoo_api"],
+        my_job = CuratedYahooDataIngester(
+            record_type=job_params["record_type"],
             equity_type=job_params["equity_type"],
-            symbols_per_group=job_params["symbols_per_group"],
+            query_grouped_symbol=job_params["query_grouped_symbol"],
             connection_config_file_path=project_dir_path / job_params["connection_config_file"],
             schema_config_file_path=project_dir_path / job_params["schema_config_file"],
             spark_app_name=job_params["spark_app_name"],
+            iceberg_raw_table=job_params["iceberg_raw_table"],
+            pg_stage_table=job_params["pg_stage_table"],
+            script_merge_pg_stage_into_fin=job_params["script_merge_pg_stage_into_fin"],
         )
-        my_job.get_eod_records()
+        my_job.ingest_yahoo_data()
     except Exception as e:
         logger.error(f"An error occurred: {e}", exc_info=True)
         raise

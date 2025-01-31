@@ -1,20 +1,58 @@
 jobs:
-  load_yahoo_etf_eod_records:
+  load_yahoo_etf_eod_quotes:
     # Job parameters for the LoadYahooEOD class
     job_parameters:
-      yahoo_api: "yahooquery" # The Yahoo API to use for fetching data
-      equity_type: "etf" # Type of equity (e.g., "etf", "stock")
-      symbols_per_group: 100 # Number of symbols in each group to fetch
       connection_config_file: "config/cfg_connections.yaml" # Path to connection config
       schema_config_file: "config/cfg_schemas.yaml" # Path to schema config
-      spark_app_name: "spark_yahoo_etf_eod" # Name of the Spark application
+      spark_app_name: spark_yahoo # Name of the Spark application
 
-  load_yahoo_stock_eod_records:
+      equity_type: etf # Type of equity (e.g., "etf", "stock") 
+      record_type: eod_quote
+
+      query_grouped_symbol: |
+        SELECT group_id, group_start_date, symbol
+        FROM fin.ufn_etl_get_grouped_etf_eod_start_date(100)
+        # WHERE group_id <=2
+
+      iceberg_raw_table: nessie.raw.etf_eod_yahoo
+      pg_stage_table: stage.etf_eod_quote_yahoo
+      script_merge_pg_stage_into_fin: call fin.usp_load_etf_eod()
+
+
+  load_yahoo_stock_eod_quotes:
     # Job parameters for the LoadYahooEOD class
     job_parameters:
-      yahoo_api: "yahooquery" # The Yahoo API to use for fetching data
-      equity_type: "stock" # Type of equity (e.g., "etf", "stock")
-      symbols_per_group: 100 # Number of symbols in each group to fetch
       connection_config_file: "config/cfg_connections.yaml" # Path to connection config
       schema_config_file: "config/cfg_schemas.yaml" # Path to schema config
-      spark_app_name: "spark_yahoo_stock_eod" # Name of the Spark application
+      spark_app_name: spark_yahoo # Name of the Spark application
+
+      equity_type: stock # Type of equity (e.g., "stock", "stock") 
+      record_type: eod_quote
+
+      query_grouped_symbol: |
+        SELECT group_id, group_start_date, symbol
+        FROM fin.ufn_etl_get_grouped_stock_eod_start_date(100)
+        # WHERE group_id <=2
+
+      iceberg_raw_table: nessie.raw.stock_eod_yahoo
+      pg_stage_table: stage.stock_eod_quote_yahoo
+      script_merge_pg_stage_into_fin: call fin.usp_load_stock_eod()
+
+
+  load_yahoo_stock_market_quotes:
+    job_parameters:
+      connection_config_file: "config/cfg_connections.yaml" # Path to connection config
+      schema_config_file: "config/cfg_schemas.yaml" # Path to schema config
+      spark_app_name: spark_yahoo # Name of the Spark application
+
+      equity_type: stock # Type of equity (e.g., "stock", "stock") 
+      record_type: market_quote
+
+      query_grouped_symbol: |
+        SELECT group_id, symbol
+        FROM fin.ufn_etl_get_grouped_stock_symbol(100)
+        # WHERE group_id <=2
+
+      iceberg_raw_table: nessie.raw.stock_market_yahoo
+      pg_stage_table: stage.stock_market_quote_yahoo
+      script_merge_pg_stage_into_fin: call fin.usp_load_stock_market()

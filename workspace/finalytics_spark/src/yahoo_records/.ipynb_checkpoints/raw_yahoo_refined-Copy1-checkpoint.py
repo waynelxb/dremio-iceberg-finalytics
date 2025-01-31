@@ -14,19 +14,25 @@ warnings.filterwarnings("ignore", category=FutureWarning, module="yahooquery")
 class RawYahoo:
     def __init__(self, subject, grouped_symbol_list):
         self.subject=subject
-        
+        self.grouped_symbol_list=grouped_symbol_list
         # Validate input list
-        if not grouped_symbol_list or not isinstance(grouped_symbol_list, list):
+        if not grouped_symbol_list or not isinstance(self.grouped_symbol_list, list):
             raise ValueError("grouped_symbol_list must be a non-empty list")
             
-        group_field_count=len(grouped_symbol_list[0])
+        group_field_count=len(self.grouped_symbol_list[0])
+        print(group_field_count)
         
-        if self.subject == "eod_quote" and group_field_count == 3:
-            self.raw_yahoo_pump = self.get_raw_eod_quote_consolidated(grouped_symbol_list)
-        elif self.subject == "market_quote" and group_field_count == 2:
-            self.raw_yahoo_pump = self.get_raw_market_quote_consolidated(grouped_symbol_list)
-        else:
-            raise ValueError(f"Invalid subject '{self.subject}' or incorrect field count ({group_field_count})")
+        if self.subject == "eod_quote" and group_field_count != 3:
+            raise ValueError("grouped_symbol_list for end quote must have 3 elements: group_id, symbol and start_date")
+            # self.yahoo_raw_record_pump = self.get_raw_eod_quote_consolidated()
+        elif self.subject == "market_quote" and group_field_count != 2:
+            raise ValueError("grouped_symbol_list for end quote must have 2 elements: group_id and symbol.")
+            # self.yahoo_raw_record_pump = self.get_raw_market_quote_consolidated()
+        # else:
+        #     print(self.subject)
+        #     print(self.grouped_symbol_list)
+        #     print(group_field_count)
+        #     raise ValueError(f"Invalid subject '{self.subject}' or incorrect field count ({group_field_count})")
 
     
     def get_raw_eod_quote(self, symbol_list: list, start_date: date) -> pd.DataFrame:
@@ -202,13 +208,3 @@ class RawYahoo:
                                          "pre_market_change_percent", "regular_market_time", "regular_market_price", \
                                          "regular_market_change", "regular_market_change_percent", "post_market_time", \
                                          "post_market_price", "post_market_change", "post_market_change_percent"])
-
-
-
-
-
-
-
-
-
-        

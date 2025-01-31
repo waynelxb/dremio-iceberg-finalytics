@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-class LoadYahooEOD:
+class LoadYahooRecords:
     def __init__(
         self,
         yahoo_api: str,
@@ -25,7 +25,7 @@ class LoadYahooEOD:
         spark_app_name: str,
     ):
         """
-        Initialize the LoadYahooEOD class.
+        Initialize the LoadYahooRecords class.
 
         Args:
             yahoo_api (str): The Yahoo API to use for fetching data.

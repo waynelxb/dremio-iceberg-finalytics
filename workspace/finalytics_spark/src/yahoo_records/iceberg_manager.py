@@ -69,7 +69,11 @@ class IcebergManager:
             schema_manager=SchemaManager(self.iceberg_schema_config_file)
             schema_struct_type=schema_manager.get_struct_type("tables", iceberg_sink_table)  
             
+            
             create_table_script = schema_manager.get_create_table_query("tables", iceberg_sink_table)
+            
+            
+            self.spark_session.sql("CREATE NAMESPACE IF NOT EXISTS nessie.raw;").show()
             self.spark_session.sql(create_table_script)
 
 

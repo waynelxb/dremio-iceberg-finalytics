@@ -6,7 +6,7 @@ import yaml
 import pandas as pd
 from pyspark.sql import SparkSession
 from .database_manager import PgDBManager
-from .raw_yahoo import get_yahoo_raw_eod_records_consolidated
+from .raw_yahoo import get_raw_market_quote_consolidated
 from .iceberg_manager import IcebergManager
 
 # Configure logging
@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-class LoadYahooEOD:
+class LoadYahooRecords:
     def __init__(
         self,
         yahoo_api: str,
@@ -25,7 +25,7 @@ class LoadYahooEOD:
         spark_app_name: str,
     ):
         """
-        Initialize the LoadYahooEOD class.
+        Initialize the LoadYahooRecords class.
 
         Args:
             yahoo_api (str): The Yahoo API to use for fetching data.
@@ -58,8 +58,8 @@ class LoadYahooEOD:
             pd.DataFrame: A DataFrame containing the fetched Yahoo EOD data.
         """
         query = f"""
-            SELECT group_id, group_start_date, symbol  
-            FROM fin.ufn_etl_get_grouped_{self.equity_type}_eod_start_date({self.symbols_per_group}) 
+            SELECT group_id, symbol  
+            FROM ufn_etl_get_grouped_{self.equity_type}_symbol({self.symbols_per_group}) 
             -- WHERE group_id < 2
         """
         try:
@@ -68,31 +68,73 @@ class LoadYahooEOD:
             logger.info(f"Fetched {len(query_result)} records from PostgreSQL.")
 
             logger.info("Fetching Yahoo EOD data from Yahoo API...")
-            hist_panda_df = get_yahoo_raw_eod_records_consolidated(self.yahoo_api, query_result)
-            hist_panda_df["import_time"] = pd.to_datetime(datetime.now()).tz_localize(None)
-            logger.info(f"Fetched {len(hist_panda_df)} records from Yahoo API.")
-            return hist_panda_df
+            quote_panda_df = get_raw_market_quote_consolidated(query_result)
+            quote_panda_df["import_time"] = pd.to_datetime(datetime.now()).tz_localize(None)
+            logger.info(f"Fetched {len(quote_panda_df)} records from Yahoo API.")
+            return quote_panda_df
         except Exception as e:
             logger.error(f"Failed to fetch Yahoo EOD data: {e}", exc_info=True)
             raise
-
-    def _load_data_to_iceberg_raw(self, hist_panda_df: pd.DataFrame):
+            
+    def _load_source_df_to_iceberg_raw_table(self, source_df, iceberg_raw_table):
         """
         Load data into the Iceberg table.
 
         Args:
-            hist_panda_df (pd.DataFrame): The DataFrame containing the Yahoo EOD data.
+            source_df (pd.DataFrame): The DataFrame containing the Yahoo EOD data.
         """
-        iceberg_raw_eod_table = f"nessie.raw.{self.equity_type}_eod_yahoo"
+        # iceberg_raw_table = f"nessie.raw.{self.equity_type}_market_quote_yahoo"
         try:
-            logger.info(f"Loading data into Iceberg table: {iceberg_raw_eod_table}...")
-            self.iceberg_manager.truncate_iceberg_table(iceberg_raw_eod_table)
-            self.iceberg_manager.insert_into_iceberg_table(hist_panda_df, iceberg_raw_eod_table)
+            logger.info(f"Loading data into Iceberg table: {iceberg_raw_table}...")
+            self.iceberg_manager.truncate_iceberg_table(iceberg_raw_table)
+            self.iceberg_manager.insert_into_iceberg_table(source_df, iceberg_raw_table)
+            logger.info("Data loaded into Iceberg successfully.")
+        except Exception as e:
+            logger.error(f"Failed to load data into Iceberg: {e}", exc_info=True)
+            raise
+    
+    def _load_data_to_iceberg_raw(self, quote_panda_df: pd.DataFrame):
+        """
+        Load data into the Iceberg table.
+
+        Args:
+            quote_panda_df (pd.DataFrame): The DataFrame containing the Yahoo EOD data.
+        """
+        iceberg_raw_table = f"nessie.raw.{self.equity_type}_market_quote_yahoo"
+        try:
+            logger.info(f"Loading data into Iceberg table: {iceberg_raw_table}...")
+            self.iceberg_manager.truncate_iceberg_table(iceberg_raw_table)
+            self.iceberg_manager.insert_into_iceberg_table(quote_panda_df, iceberg_raw_table)
             logger.info("Data loaded into Iceberg successfully.")
         except Exception as e:
             logger.error(f"Failed to load data into Iceberg: {e}", exc_info=True)
             raise
 
+
+    def _load_iceberg_raw_table_to_pg_stage_table(self, iceberg_raw_table, pg_stage_table):
+        """
+        Load data from Iceberg to PostgreSQL.
+        """
+        # iceberg_raw_table = f"nessie.raw.{self.equity_type}_eod_yahoo"
+        # pg_stage_table = f"stage.{self.equity_type}_eod_quote_yahoo"
+        try:
+            logger.info(f"Truncating PostgreSQL table: {pg_stage_table}...")
+            pg_truncate_script = f"TRUNCATE TABLE {pg_stage_table}"
+            self.fin_db_manager.execute_sql_script(pg_truncate_script)
+
+            logger.info(f"Loading data from Iceberg to PostgreSQL table: {pg_stage_table}...")
+            self.iceberg_manager.insert_iceberg_data_into_pg(
+                iceberg_raw_table,
+                pg_stage_table,
+                self.fin_db_manager.jdbc_url,
+                self.fin_db_manager.jdbc_properties,
+                "append",
+            )
+            logger.info("Data loaded into PostgreSQL successfully.")
+        except Exception as e:
+            logger.error(f"Failed to load data into PostgreSQL: {e}", exc_info=True)
+            raise
+            
     def _load_iceberg_raw_to_pg_stage(self):
         """
         Load data from Iceberg to PostgreSQL.
@@ -117,11 +159,11 @@ class LoadYahooEOD:
             logger.error(f"Failed to load data into PostgreSQL: {e}", exc_info=True)
             raise
 
-    def _merge_pg_stage_into_fin(self):
+    def _merge_pg_stage_table_into_fin_table(self, pg_merge_script):
         """
         Merge data in PostgreSQL.
         """
-        pg_merge_script = f"call fin.usp_load_{self.equity_type}_eod();"
+        # pg_merge_script = f"call fin.usp_load_{self.equity_type}_eod();"
         try:
             logger.info("Merging data in PostgreSQL...")
             self.fin_db_manager.execute_sql_script(pg_merge_script)
@@ -130,14 +172,14 @@ class LoadYahooEOD:
             logger.error(f"Failed to merge data in PostgreSQL: {e}", exc_info=True)
             raise
 
-    def get_eod_records(self):
+    def ingest_yahoo_records(self):
         """
         Main method to fetch and load EOD records.
         """
         try:
             logger.info("Starting EOD records loading process...")
-            hist_panda_df = self._fetch_yahoo_data()
-            self._load_data_to_iceberg_raw(hist_panda_df)
+            quote_panda_df = self._fetch_yahoo_data()
+            self._load_data_to_iceberg_raw(quote_panda_df)
             self._load_iceberg_raw_to_pg_stage()
             self._merge_pg_stage_into_fin()
             logger.info("EOD records loaded successfully.")
