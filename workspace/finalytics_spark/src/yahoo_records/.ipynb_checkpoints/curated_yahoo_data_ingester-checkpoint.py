@@ -80,6 +80,7 @@ class CuratedYahooDataIngester:
             raw_yahoo_data_colletor=RawYahooDataCollector(self.record_type, grouped_symbol_list)   
             
             raw_yahoo_panda_df = raw_yahoo_data_colletor.get_raw_yahoo_data()
+            print(raw_yahoo_panda_df)
             
             raw_yahoo_panda_df["import_time"] = pd.to_datetime(datetime.now()).tz_localize(None)
             logger.info(f"Fetched {len(raw_yahoo_panda_df)} records from Yahoo API.")
@@ -117,13 +118,16 @@ class CuratedYahooDataIngester:
             pg_truncate_script = f"TRUNCATE TABLE {self.pg_stage_table}"
             self.fin_db_manager.execute_sql_script(pg_truncate_script)
 
+
+
             logger.info(f"Loading data from Iceberg to PostgreSQL table: {self.pg_stage_table}...")
             self.iceberg_manager.insert_iceberg_data_into_pg(
                 self.iceberg_raw_table,
+           
                 self.pg_stage_table,
                 self.fin_db_manager.jdbc_url,
                 self.fin_db_manager.jdbc_properties,
-                "append",
+                "overwrite",
             )
             logger.info("Data loaded into PostgreSQL successfully.")
         except Exception as e:
