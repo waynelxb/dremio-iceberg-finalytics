@@ -3,6 +3,9 @@ import pyspark
 import pandas as pd
 from pyspark.sql import SparkSession
 from .schema_manager import SchemaManager
+from pyspark.sql import SparkSession
+from pyspark.sql.types import StructType, StructField, StringType, FloatType, TimestampType
+
 
 
 class IcebergManager:
@@ -64,27 +67,22 @@ class IcebergManager:
         return self.spark_session
 
 
-    def insert_into_iceberg_table(self, source_data_frame, iceberg_sink_table):
+    def insert_into_iceberg_table(self, source_df, iceberg_sink_table):
         try: 
             schema_manager=SchemaManager(self.iceberg_schema_config_file)
-            schema_struct_type=schema_manager.get_struct_type("tables", iceberg_sink_table)  
+            schema=schema_manager.get_object_schema("tables", iceberg_sink_table)       
+            # Convert pandas DataFrame to Spark DataFrame
+            source_df = self.spark_session.createDataFrame(source_df, schema=schema)  
+            # source_df=self.spark_session.createDataFrame(source_df)
             
-            
-            create_table_script = schema_manager.get_create_table_query("tables", iceberg_sink_table)
-            
-            
-            self.spark_session.sql("CREATE NAMESPACE IF NOT EXISTS nessie.raw;").show()
+            self.spark_session.sql("CREATE NAMESPACE IF NOT EXISTS nessie.raw;")           
+            create_table_script = schema_manager.get_create_table_query("tables", iceberg_sink_table) 
             self.spark_session.sql(create_table_script)
-
-
-            # Check if the type of df is pandas DataFrame
-            if isinstance(source_data_frame, pd.DataFrame):
-                source_data_frame=self.spark_session.createDataFrame(source_data_frame)
-                    
-            source_data_frame.writeTo(iceberg_sink_table).append()
-            # source_spark_df.write.mode("overwrite").saveAsTable(iceberg_sink_table) 
-    
-            incremental_count=source_data_frame.count()
+            
+            source_df.writeTo(iceberg_sink_table).append()
+            # source_df.write.mode("overwrite").saveAsTable(iceberg_sink_table) 
+           
+            incremental_count=source_df.count()
             total_count=self.spark_session.table(iceberg_sink_table).count()
     
             print(f"{iceberg_sink_table} was loaded with {incremental_count} records, totally {total_count} records.")

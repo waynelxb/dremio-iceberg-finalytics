@@ -21,8 +21,9 @@ class SchemaManager:
             return self.config[object_type][object_name]
         except KeyError as e:
             raise KeyError(f"{e.args[0]} not found in the configuration.")
+         
     
-    def get_struct_type(self, object_type, object_name):
+    def get_object_schema(self, object_type, object_name):
     
         """
         Generate a PySpark schema for a given table name from the configuration.
@@ -55,11 +56,11 @@ class SchemaManager:
     def get_create_table_query(self, object_type, object_name):
         if object_type=="tables":
             object_config = self.get_object_config(object_type, object_name)           
-            object_struct_type = self.get_struct_type(object_type, object_name)
+            object_schema = self.get_object_schema(object_type, object_name)
             partition_by = object_config.get("partition_by", [])
             
             # Generate SQL columns
-            columns = ", ".join([f"{field.name} {field.dataType.simpleString()}" for field in object_struct_type.fields])
+            columns = ", ".join([f"{field.name} {field.dataType.simpleString()}" for field in object_schema.fields])
             partitioning = ", ".join([p["field"] for p in partition_by]) if partition_by else ""
             
             # Generate CREATE TABLE query
@@ -69,3 +70,6 @@ class SchemaManager:
             if partitioning:
                 create_table_query += f" PARTITIONED BY ({partitioning})"
             return create_table_query.strip()
+
+
+

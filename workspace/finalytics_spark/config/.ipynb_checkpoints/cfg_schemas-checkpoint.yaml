@@ -11,16 +11,16 @@ tables:
       type: StringType
       nullable: false
     - name: open
-      type: FloatType
+      type: StringType
       nullable: true
     - name: high
-      type: FloatType
+      type: StringType
       nullable: true
     - name: low
-      type: FloatType
+      type: StringType
       nullable: true
     - name: close
-      type: FloatType
+      type: StringType
       nullable: true
     - name: volume
       type: IntegerType
@@ -61,3 +61,124 @@ tables:
     # partition_by:
     # # Optional partitioning
     # - field: date
+
+  nessie.raw.etf_market_yahoo:
+    schema:
+    - name: symbol
+      type: StringType
+      nullable: false      
+    - name: exchange_name
+      type: StringType
+      nullable: false      
+    - name: market_state
+      type: StringType
+      nullable: true      
+    - name: pre_market_time
+      type: StringType
+      nullable: true
+    - name: pre_market_price
+      type: FloatType
+      nullable: true      
+    - name: pre_market_change
+      type: FloatType
+      nullable: true      
+    - name: pre_market_change_percent
+      type: FloatType
+      nullable: true
+    - name: regular_market_time
+      type: StringType
+      nullable: true
+    - name: regular_market_price
+      type: FloatType
+      nullable: true      
+    - name: regular_market_change
+      type: FloatType
+      nullable: true      
+    - name: regular_market_change_percent
+      type: FloatType
+      nullable: true
+    - name: post_market_time
+      type: StringType
+      nullable: true
+    - name: post_market_price
+      type: FloatType
+      nullable: true      
+    - name: post_market_change
+      type: FloatType
+      nullable: true      
+    - name: post_market_change_percent
+      type: FloatType
+      nullable: true      
+    - name: import_time
+      type: StringType
+      nullable: false
+
+
+  nessie.raw.stock_market_yahoo:
+    schema:
+    - name: symbol
+      type: StringType
+      nullable: false      
+    - name: exchange_name
+      type: StringType
+      nullable: false      
+    - name: market_state
+      type: StringType
+      nullable: true      
+    - name: pre_market_time
+      type: StringType
+      nullable: true
+    - name: pre_market_price
+      type: FloatType
+      nullable: true      
+    - name: pre_market_change
+      type: FloatType
+      nullable: true      
+    - name: pre_market_change_percent
+      type: FloatType
+      nullable: true
+    - name: regular_market_time
+      type: StringType
+      nullable: true
+    - name: regular_market_price
+      type: FloatType
+      nullable: true      
+    - name: regular_market_change
+      type: FloatType
+      nullable: true      
+    - name: regular_market_change_percent
+      type: FloatType
+      nullable: true
+    - name: post_market_time
+      type: StringType
+      nullable: true
+    - name: post_market_price
+      type: FloatType
+      nullable: true      
+    - name: post_market_change
+      type: FloatType
+      nullable: true      
+    - name: post_market_change_percent
+      type: FloatType
+      nullable: true      
+    - name: import_time
+      type: StringType
+      nullable: false
+
+
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+    

@@ -74,7 +74,7 @@ tables:
       type: StringType
       nullable: true      
     - name: pre_market_time
-      type: StringType
+      type: TimestampType
       nullable: true
     - name: pre_market_price
       type: FloatType
@@ -86,7 +86,7 @@ tables:
       type: FloatType
       nullable: true
     - name: regular_market_time
-      type: StringType
+      type: TimestampType
       nullable: true
     - name: regular_market_price
       type: FloatType
@@ -98,7 +98,7 @@ tables:
       type: FloatType
       nullable: true
     - name: post_market_time
-      type: StringType
+      type: TimestampType
       nullable: true
     - name: post_market_price
       type: FloatType
@@ -110,7 +110,7 @@ tables:
       type: FloatType
       nullable: true      
     - name: import_time
-      type: StringType
+      type: TimestampType
       nullable: false
 
 

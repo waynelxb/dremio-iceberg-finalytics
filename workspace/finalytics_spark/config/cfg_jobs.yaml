@@ -11,8 +11,8 @@ jobs:
 
       query_grouped_symbol: |
         SELECT group_id, group_start_date, symbol
-        FROM fin.ufn_etl_get_grouped_etf_eod_start_date(100)
-        # WHERE group_id <=2
+        FROM fin.ufn_etl_get_grouped_etf_eod_start_date(5)
+        WHERE group_id <=1
 
       iceberg_raw_table: nessie.raw.etf_eod_yahoo
       pg_stage_table: stage.etf_eod_quote_yahoo
@@ -31,7 +31,7 @@ jobs:
 
       query_grouped_symbol: |
         SELECT group_id, group_start_date, symbol
-        FROM fin.ufn_etl_get_grouped_stock_eod_start_date(100)
+        FROM fin.ufn_etl_get_grouped_stock_eod_start_date(5)
         # WHERE group_id <=2
 
       iceberg_raw_table: nessie.raw.stock_eod_yahoo
@@ -50,8 +50,8 @@ jobs:
 
       query_grouped_symbol: |
         SELECT group_id, symbol
-        FROM fin.ufn_etl_get_grouped_stock_symbol(100)
-        # WHERE group_id <=2
+        FROM fin.ufn_etl_get_grouped_stock_symbol(5)
+        WHERE group_id <=1
 
       iceberg_raw_table: nessie.raw.stock_market_yahoo
       pg_stage_table: stage.stock_market_quote_yahoo

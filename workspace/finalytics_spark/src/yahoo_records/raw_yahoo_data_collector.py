@@ -6,6 +6,7 @@ import random
 import time
 import warnings
 import traceback
+import numpy as np
 
 warnings.filterwarnings("ignore", category=FutureWarning, module="yahooquery")
 
@@ -83,26 +84,48 @@ class RawYahooDataCollector:
             t = Ticker(symbol_list)
             prices = t.price
 
+            # market_data = {
+            #     symbol: {
+            #         "exchange_name": details.get("exchangeName", "NULL"),
+            #         "market_state": details.get("marketState", "NULL"),
+            #         "pre_market_time": details.get("preMarketTime", "NULL"),
+            #         "pre_market_price": details.get("preMarketPrice", "NULL"),
+            #         "pre_market_change": details.get("preMarketChange", "NULL"),
+            #         "pre_market_change_percent": details.get("preMarketChangePercent", "NULL"),
+            #         "regular_market_time": details.get("regularMarketTime", "NULL"),
+            #         "regular_market_price": details.get("regularMarketPrice", "NULL"),
+            #         "regular_market_change": details.get("regularMarketChange", "NULL"),
+            #         "regular_market_change_percent": details.get("regularMarketChangePercent", "NULL"),
+            #         "post_market_time": details.get("postMarketTime", "NULL"),
+            #         "post_market_price": details.get("postMarketPrice", "NULL"),
+            #         "post_market_change": details.get("postMarketChange", "NULL"),
+            #         "post_market_change_percent": details.get("postMarketChangePercent", "NULL"),
+            #     }
+            #     for symbol, details in prices.items()
+            # }
+
+
+
             market_data = {
                 symbol: {
                     "exchange_name": details.get("exchangeName", "NULL"),
-                    "current_market_state": details.get("marketState", "NULL"),
-                    "pre_market_time": details.get("preMarketTime", "NULL"),
-                    "pre_market_price": details.get("preMarketPrice", "NULL"),
-                    "pre_market_change": details.get("preMarketChange", "NULL"),
-                    "pre_market_change_percent": details.get("preMarketChangePercent", "NULL"),
-                    "regular_market_time": details.get("regularMarketTime", "NULL"),
-                    "regular_market_price": details.get("regularMarketPrice", "NULL"),
-                    "regular_market_change": details.get("regularMarketChange", "NULL"),
-                    "regular_market_change_percent": details.get("regularMarketChangePercent", "NULL"),
-                    "post_market_time": details.get("postMarketTime", "NULL"),
-                    "post_market_price": details.get("postMarketPrice", "NULL"),
-                    "post_market_change": details.get("postMarketChange", "NULL"),
-                    "post_market_change_percent": details.get("postMarketChangePercent", "NULL"),
+                    "market_state": details.get("marketState", "NULL"),
+                    "pre_market_time": pd.to_datetime(details.get("preMarketTime", None), unit='s', errors='coerce'),
+                    "pre_market_price": float(details.get("preMarketPrice", np.nan)) if details.get("preMarketPrice") is not None else np.nan,
+                    "pre_market_change": float(details.get("preMarketChange", np.nan)) if details.get("preMarketChange") is not None else np.nan,
+                    "pre_market_change_percent": float(details.get("preMarketChangePercent", np.nan)) if details.get("preMarketChangePercent") is not None else np.nan,
+                    "regular_market_time": pd.to_datetime(details.get("regularMarketTime", None), unit='s', errors='coerce'),
+                    "regular_market_price": float(details.get("regularMarketPrice", np.nan)) if details.get("regularMarketPrice") is not None else np.nan,
+                    "regular_market_change": float(details.get("regularMarketChange", np.nan)) if details.get("regularMarketChange") is not None else np.nan,
+                    "regular_market_change_percent": float(details.get("regularMarketChangePercent", np.nan)) if details.get("regularMarketChangePercent") is not None else np.nan,
+                    "post_market_time": pd.to_datetime(details.get("postMarketTime", None), unit='s', errors='coerce'),
+                    "post_market_price": float(details.get("postMarketPrice", np.nan)) if details.get("postMarketPrice") is not None else np.nan,
+                    "post_market_change": float(details.get("postMarketChange", np.nan)) if details.get("postMarketChange") is not None else np.nan,
+                    "post_market_change_percent": float(details.get("postMarketChangePercent", np.nan)) if details.get("postMarketChangePercent") is not None else np.nan,
                 }
                 for symbol, details in prices.items()
             }
-
+            
             market_panda_df = pd.DataFrame.from_dict(market_data, orient="index").reset_index()
             market_panda_df.rename(columns={"index": "symbol"}, inplace=True)
             return market_panda_df
@@ -115,7 +138,7 @@ class RawYahooDataCollector:
     def get_raw_market_quotes_consolidated(self) -> pd.DataFrame:
         try:
             if not self.grouped_symbol_list:
-                return pd.DataFrame(columns=["symbol", "exchange_name", "current_market_state", "pre_market_time", 
+                return pd.DataFrame(columns=["symbol", "exchange_name", "market_state", "pre_market_time", 
                                              "pre_market_price", "pre_market_change", "pre_market_change_percent", 
                                              "regular_market_time", "regular_market_price", "regular_market_change", 
                                              "regular_market_change_percent", "post_market_time", "post_market_price", 
