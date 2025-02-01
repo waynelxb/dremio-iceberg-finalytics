@@ -165,10 +165,86 @@ tables:
       type: TimestampType
       nullable: false
 
-
-
-
-
+  nessie.raw.stock_profile_yahoo:
+    schema:
+      - name: symbol
+        type: StringType
+        nullable: false
+      - name: industry
+        type: StringType
+        nullable: true
+      - name: sector
+        type: StringType
+        nullable: true
+      - name: enterprise_value
+        type: DoubleType
+        nullable: true
+      - name: forward_pe
+        type: DoubleType
+        nullable: true
+      - name: profit_margins
+        type: DoubleType
+        nullable: true
+      - name: float_shares
+        type: LongType
+        nullable: true
+      - name: shares_outstanding
+        type: LongType
+        nullable: true
+      - name: shares_short
+        type: LongType
+        nullable: true
+      - name: shares_short_prior_month
+        type: LongType
+        nullable: true
+      - name: short_ratio
+        type: DoubleType
+        nullable: true
+      - name: short_percent_of_float
+        type: DoubleType
+        nullable: true
+      - name: beta
+        type: DoubleType
+        nullable: true
+      - name: book_value
+        type: DoubleType
+        nullable: true
+      - name: price_to_book
+        type: DoubleType
+        nullable: true
+      - name: last_fiscal_year_end
+        type: DateType
+        nullable: true
+      - name: next_fiscal_year_end
+        type: DateType
+        nullable: true
+      - name: most_recent_quarter
+        type: DateType
+        nullable: true
+      - name: earnings_quarterly_growth
+        type: DoubleType
+        nullable: true
+      - name: net_income_to_common
+        type: DoubleType
+        nullable: true
+      - name: trailing_eps
+        type: DoubleType
+        nullable: true
+      - name: forward_eps
+        type: DoubleType
+        nullable: true
+      - name: peg_ratio
+        type: DoubleType
+        nullable: true
+      - name: last_split_factor
+        type: StringType
+        nullable: true
+      - name: last_split_date
+        type: DateType
+        nullable: true
+      - name: import_time
+        type: TimestampType
+        nullable: false
     
 
 
