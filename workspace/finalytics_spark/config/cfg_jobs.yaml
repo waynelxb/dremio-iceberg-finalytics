@@ -16,7 +16,7 @@ jobs:
 
       iceberg_raw_table: nessie.raw.etf_eod_yahoo
       pg_stage_table: stage.etf_eod_quote_yahoo
-      script_merge_pg_stage_into_fin: call fin.usp_load_etf_eod()
+      script_merge_pg_stage_into_fin: call fin.usp_load_etf_eod_quote()
 
 
   load_yahoo_stock_eod_quotes:
@@ -36,7 +36,7 @@ jobs:
 
       iceberg_raw_table: nessie.raw.stock_eod_yahoo
       pg_stage_table: stage.stock_eod_quote_yahoo
-      script_merge_pg_stage_into_fin: call fin.usp_load_stock_eod()
+      script_merge_pg_stage_into_fin: call fin.usp_load_stock_eod_quote()
 
 
   load_yahoo_stock_market_quotes:
@@ -55,4 +55,4 @@ jobs:
 
       iceberg_raw_table: nessie.raw.stock_market_yahoo
       pg_stage_table: stage.stock_market_quote_yahoo
-      script_merge_pg_stage_into_fin: call fin.usp_load_stock_market()
+      script_merge_pg_stage_into_fin: call fin.usp_load_stock_market_quote()
