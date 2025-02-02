@@ -186,16 +186,16 @@ tables:
         type: DoubleType
         nullable: true
       - name: float_shares
-        type: LongType
+        type: DoubleType
         nullable: true
       - name: shares_outstanding
-        type: LongType
+        type: DoubleType
         nullable: true
       - name: shares_short
-        type: LongType
+        type: DoubleType
         nullable: true
       - name: shares_short_prior_month
-        type: LongType
+        type: DoubleType
         nullable: true
       - name: short_ratio
         type: DoubleType
@@ -213,13 +213,13 @@ tables:
         type: DoubleType
         nullable: true
       - name: last_fiscal_year_end
-        type: DateType
+        type: StringType
         nullable: true
       - name: next_fiscal_year_end
-        type: DateType
+        type: StringType
         nullable: true
       - name: most_recent_quarter
-        type: DateType
+        type: StringType
         nullable: true
       - name: earnings_quarterly_growth
         type: DoubleType
@@ -240,7 +240,7 @@ tables:
         type: StringType
         nullable: true
       - name: last_split_date
-        type: DateType
+        type: StringType
         nullable: true
       - name: import_time
         type: TimestampType

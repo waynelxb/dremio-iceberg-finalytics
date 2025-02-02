@@ -6,7 +6,7 @@ jobs:
       schema_config_file: "config/cfg_schemas.yaml" # Path to schema config
       spark_app_name: spark_yahoo # Name of the Spark application
 
-      equity_type: etf # Type of equity (e.g., "etf", "stock") 
+      # equity_type: etf # Type of equity (e.g., "etf", "stock") 
       record_type: eod_quote
 
       query_grouped_symbol: |
@@ -25,14 +25,12 @@ jobs:
       connection_config_file: "config/cfg_connections.yaml" # Path to connection config
       schema_config_file: "config/cfg_schemas.yaml" # Path to schema config
       spark_app_name: spark_yahoo # Name of the Spark application
-
-      equity_type: stock # Type of equity (e.g., "stock", "stock") 
       record_type: eod_quote
 
       query_grouped_symbol: |
         SELECT group_id, group_start_date, symbol
         FROM fin.ufn_etl_get_grouped_stock_eod_start_date(5)
-        # WHERE group_id <=2
+        WHERE group_id <=1
 
       iceberg_raw_table: nessie.raw.stock_eod_yahoo
       pg_stage_table: stage.stock_eod_quote_yahoo
@@ -44,8 +42,6 @@ jobs:
       connection_config_file: "config/cfg_connections.yaml" # Path to connection config
       schema_config_file: "config/cfg_schemas.yaml" # Path to schema config
       spark_app_name: spark_yahoo # Name of the Spark application
-
-      equity_type: stock # Type of equity (e.g., "stock", "stock") 
       record_type: market_quote
 
       query_grouped_symbol: |
@@ -56,3 +52,31 @@ jobs:
       iceberg_raw_table: nessie.raw.stock_market_yahoo
       pg_stage_table: stage.stock_market_quote_yahoo
       script_merge_pg_stage_into_fin: call fin.usp_load_stock_market_quote()
+
+  load_yahoo_stock_profile:
+    job_parameters:
+      connection_config_file: "config/cfg_connections.yaml" # Path to connection config
+      schema_config_file: "config/cfg_schemas.yaml" # Path to schema config
+      spark_app_name: spark_yahoo # Name of the Spark application
+      record_type: profile
+
+      query_grouped_symbol: |
+        SELECT group_id, symbol
+        FROM fin.ufn_etl_get_grouped_stock_symbol(5)
+        WHERE group_id <=1
+
+      iceberg_raw_table: nessie.raw.stock_profile_yahoo
+      pg_stage_table: stage.stock_profile_yahoo
+      script_merge_pg_stage_into_fin: call fin.usp_load_stock_profile()
+
+
+
+
+
+
+
+
+
+
+
+      

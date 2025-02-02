@@ -6,3 +6,6 @@ minio-volume/seed/test.csv/xl.meta
 minio-volume/seed/test.csv/xl.meta
 postgres_data/
 
+workspace/finalytics_spark/src/.ipynb_checkpoints/
+workspace/finalytics_spark/config/.ipynb_checkpoints/
+

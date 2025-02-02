@@ -4,6 +4,7 @@ spark:
   warehouse: "s3://warehouse/"               # Minio Address to Write to
   storage_uri: "http://172.22.0.20:9000"      # Minio IP address from docker inspect
   spark_master_uri: "spark://172.22.0.30:7077"
+
   
 databases:
   postgresql:
