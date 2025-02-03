@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 
-class IcebergIngestionPipelineExecuter:
+class YahooToIcebergPipeline:
     """
     A pipeline executor that fetches data from Yahoo's API, and ingests them into an Iceberg table.
     """

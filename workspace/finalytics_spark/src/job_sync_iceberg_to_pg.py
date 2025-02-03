@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Dict, Any
 import yaml
 
-from pipeline_executers.iceberg_ingestion_pipeline_executer import IcebergIngestionPipelineExecuter
+from etl_pipelines.iceberg_to_pg_pipeline import IcebergToPgPipeline
 
 # Configure logging with timestamps
 logging.basicConfig(
@@ -66,17 +66,17 @@ def main(job_name: str):
             raise ValueError(f"Missing 'job_parameters' for job '{job_name}'.")
 
         # Initialize and execute the pipeline
-        pipeline_executer = IcebergIngestionPipelineExecuter(
+        pipeline = IcebergToPgPipeline(
             connection_config_file_path=project_dir_path / job_params["connection_config_file"],
-            schema_config_file_path=project_dir_path / job_params["schema_config_file"],
-            record_type=job_params["record_type"],
-            query_grouped_symbol=job_params["query_grouped_symbol"],
+            schema_config_file_path=project_dir_path / job_params["schema_config_file"],           
             spark_app_name=job_params["spark_app_name"],
-            iceberg_raw_table=job_params["iceberg_raw_table"]
+            iceberg_raw_table=job_params["iceberg_raw_table"],
+            pg_stage_table=job_params["pg_stage_table"],
+            script_merge_pg_stage_into_fin=job_params["script_merge_pg_stage_into_fin"]
         )
 
         logger.info(f"Starting pipeline execution for job: {job_name}")
-        pipeline_executer.execute_pipeline()
+        pipeline.execute_pipeline()
         logger.info(f"Pipeline execution completed successfully for job: {job_name}")
 
     except FileNotFoundError as e:

@@ -244,13 +244,43 @@ tables:
         nullable: true
       - name: import_time
         type: TimestampType
-        nullable: false
-    
+        nullable: false    
 
+  nessie.raw.stock_symbol_sa:
+    schema:
+    - name: symbol
+      type: StringType
+      nullable: false
+    - name: company_name
+      type: StringType
+      nullable: true
+    - name: industry
+      type: StringType
+      nullable: true
+    - name: market_cap
+      type: StringType
+      nullable: true
+    - name: import_time
+      type: TimestampType
+      nullable: false
 
-
-
-
+  nessie.raw.etf_symbol_sa:
+    schema:
+    - name: symbol
+      type: StringType
+      nullable: false
+    - name: assets
+      type: StringType
+      nullable: true
+    - name: fund_name
+      type: StringType
+      nullable: true
+    - name: asset_class
+      type: StringType
+      nullable: true
+    - name: import_time
+      type: TimestampType
+      nullable: false
 
 
 

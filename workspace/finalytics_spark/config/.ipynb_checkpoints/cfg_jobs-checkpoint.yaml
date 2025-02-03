@@ -1,10 +1,10 @@
 jobs:
-  load_yahoo_etf_eod_quotes:
+  load_yahoo_etf_eod_quotes_to_iceberg:
     # Job parameters for the LoadYahooEOD class
     job_parameters:
       connection_config_file: "config/cfg_connections.yaml" # Path to connection config
       schema_config_file: "config/cfg_schemas.yaml" # Path to schema config
-      spark_app_name: spark_yahoo # Name of the Spark application
+      spark_app_name: finalytics_spark # Name of the Spark application
 
       # equity_type: etf # Type of equity (e.g., "etf", "stock") 
       record_type: eod_quote
@@ -19,12 +19,12 @@ jobs:
       script_merge_pg_stage_into_fin: call fin.usp_load_etf_eod_quote()
 
 
-  load_yahoo_stock_eod_quotes:
+  load_yahoo_stock_eod_quotes_to_iceberg:
     # Job parameters for the LoadYahooEOD class
     job_parameters:
       connection_config_file: "config/cfg_connections.yaml" # Path to connection config
       schema_config_file: "config/cfg_schemas.yaml" # Path to schema config
-      spark_app_name: spark_yahoo # Name of the Spark application
+      spark_app_name: finalytics_spark # Name of the Spark application
       record_type: eod_quote
 
       query_grouped_symbol: |
@@ -37,11 +37,11 @@ jobs:
       script_merge_pg_stage_into_fin: call fin.usp_load_stock_eod_quote()
 
 
-  load_yahoo_stock_market_quotes:
+  load_yahoo_stock_market_quotes_to_iceberg:
     job_parameters:
       connection_config_file: "config/cfg_connections.yaml" # Path to connection config
       schema_config_file: "config/cfg_schemas.yaml" # Path to schema config
-      spark_app_name: spark_yahoo # Name of the Spark application
+      spark_app_name: finalytics_spark # Name of the Spark application
       record_type: market_quote
 
       query_grouped_symbol: |
@@ -53,11 +53,11 @@ jobs:
       pg_stage_table: stage.stock_market_quote_yahoo
       script_merge_pg_stage_into_fin: call fin.usp_load_stock_market_quote()
 
-  load_yahoo_stock_profile:
+  load_yahoo_stock_profile_to_iceberg:
     job_parameters:
       connection_config_file: "config/cfg_connections.yaml" # Path to connection config
       schema_config_file: "config/cfg_schemas.yaml" # Path to schema config
-      spark_app_name: spark_yahoo # Name of the Spark application
+      spark_app_name: finalytics_spark # Name of the Spark application
       record_type: profile
 
       query_grouped_symbol: |
@@ -70,6 +70,74 @@ jobs:
       script_merge_pg_stage_into_fin: call fin.usp_load_stock_profile()
 
 
+  load_sa_stock_symbol_to_iceberg:
+    job_parameters:
+      connection_config_file: "config/cfg_connections.yaml" # Path to connection config
+      schema_config_file: "config/cfg_schemas.yaml" # Path to schema config
+      spark_app_name: finalytics_spark # Name of the Spark application
+      source_file_path: "source_files/stock_analytics/stock_analytics_stocks.txt"
+      source_file_delimiter: "\t"
+      iceberg_raw_table: nessie.raw.stock_symbol_sa
+      # pg_stage_table: stage.stock_symbol_sa
+      # script_merge_pg_stage_into_fin: call fin.usp_load_stock_symbol()
+
+
+  load_sa_etf_symbol_to_iceberg:
+    job_parameters:
+      connection_config_file: "config/cfg_connections.yaml" # Path to connection config
+      schema_config_file: "config/cfg_schemas.yaml" # Path to schema config
+      spark_app_name: finalytics_spark # Name of the Spark application
+      source_file_path: "source_files/stock_analytics/stock_analytics_etfs.txt"
+      source_file_delimiter: "\t"
+      iceberg_raw_table: nessie.raw.etf_symbol_sa
+      # pg_stage_table: stage.etf_symbol_sa
+      # script_merge_pg_stage_into_fin: call fin.usp_load_etf_symbol()
+
+
+
+
+
+  sync_yahoo_stock_profile_to_pg:
+    job_parameters:
+      connection_config_file: "config/cfg_connections.yaml" # Path to connection config
+      schema_config_file: "config/cfg_schemas.yaml" # Path to schema config
+      spark_app_name: finalytics_spark # Name of the Spark application
+      iceberg_raw_table: nessie.raw.stock_profile_yahoo
+      pg_stage_table: stage.stock_profile_yahoo
+      script_merge_pg_stage_into_fin: call fin.usp_load_stock_profile()
+
+
+
+
+
+      
+
+  sync_yahoo_stock_market_quote_to_pg:
+    job_parameters:
+      connection_config_file: "config/cfg_connections.yaml" # Path to connection config
+      schema_config_file: "config/cfg_schemas.yaml" # Path to schema config
+      spark_app_name: finalytics_spark # Name of the Spark application
+      iceberg_raw_table: nessie.raw.stock_market_yahoo
+      pg_stage_table: stage.stock_market_quote_yahoo
+      script_merge_pg_stage_into_fin: call fin.usp_load_stock_market_quote()
+
+  sync_sa_stock_symbol_to_pg:
+    job_parameters:
+      connection_config_file: "config/cfg_connections.yaml" # Path to connection config
+      schema_config_file: "config/cfg_schemas.yaml" # Path to schema config
+      spark_app_name: finalytics_spark # Name of the Spark application
+      iceberg_raw_table: nessie.raw.stock_symbol_sa
+      pg_stage_table: stage.stock_symbol_sa
+      script_merge_pg_stage_into_fin: call fin.usp_load_stock_symbol()
+
+  sync_sa_etf_symbol_to_pg:
+    job_parameters:
+      connection_config_file: "config/cfg_connections.yaml" # Path to connection config
+      schema_config_file: "config/cfg_schemas.yaml" # Path to schema config
+      spark_app_name: finalytics_spark # Name of the Spark application
+      iceberg_raw_table: nessie.raw.etf_symbol_sa
+      pg_stage_table: stage.etf_symbol_sa
+      script_merge_pg_stage_into_fin: call fin.usp_load_etf_symbol()
 
 
 
@@ -78,5 +146,9 @@ jobs:
 
 
 
+
+
+
+      
 
       

@@ -9,3 +9,8 @@ postgres_data/
 workspace/finalytics_spark/src/.ipynb_checkpoints/
 workspace/finalytics_spark/config/.ipynb_checkpoints/
 
+workspace/finalytics_spark/src/etl_pipelines/.ipynb_checkpoints/
+workspace/finalytics_spark/src/etl_pipelines/__pycache__/
+workspace/finalytics_spark/src/etl_pipelines/__pycache__/
+workspace/.Trash-0/info/
+*.trashinfo

@@ -3,16 +3,16 @@ import pyspark
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType, DoubleType, DateType, FloatType, TimestampType, LongType
 
 class SchemaManager:
-    def __init__(self, config_file_path):
-        self.config_file_path = config_file_path
+    def __init__(self, schema_config_file_path):
+        self.schema_config_file_path = schema_config_file_path
         self.config = self._load_config()
         
     def _load_config(self):
         try:
-            with open(self.config_file_path, 'r') as file:
+            with open(self.schema_config_file_path, 'r') as file:
                 return yaml.safe_load(file)
         except FileNotFoundError:
-            raise FileNotFoundError(f"Configuration file '{self.config_file_path}' not found.")
+            raise FileNotFoundError(f"Configuration file '{self.schema_config_file_path}' not found.")
         except yaml.YAMLError as e:
             raise ValueError(f"Error parsing YAML file: {e}")
     
