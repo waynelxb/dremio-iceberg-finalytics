@@ -103,15 +103,30 @@ services:
       intro-network:
         ipv4_address: 172.22.0.40
 
-  superset:
-    # image: alexmerced/dremio-superset
-    image: superset-dashboard
-    container_name: superset-dashboard
+  postgres:
+    image: postgres:latest
     ports:
-      - 18088:8088
+      - "5432:5432"
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
+    container_name: postgresql
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
     networks:
       intro-network:
         ipv4_address: 172.22.0.50
+
+
+  # superset:
+  #   # image: alexmerced/dremio-superset
+  #   image: superset-dashboard
+  #   container_name: superset-dashboard
+  #   ports:
+  #     - 18088:8088
+  #   networks:
+  #     intro-network:
+  #       ipv4_address: 172.22.0.60
 
 networks:
   intro-network:

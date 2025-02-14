@@ -4,7 +4,6 @@ minio-volume/seed/
 *.meta
 minio-volume/seed/test.csv/xl.meta
 minio-volume/seed/test.csv/xl.meta
-postgres_data/
 
 workspace/finalytics_spark/src/.ipynb_checkpoints/
 workspace/finalytics_spark/config/.ipynb_checkpoints/
@@ -14,3 +13,5 @@ workspace/finalytics_spark/src/etl_pipelines/__pycache__/
 workspace/finalytics_spark/src/etl_pipelines/__pycache__/
 workspace/.Trash-0/info/
 *.trashinfo
+postgres/
+minio-volume/seed/
