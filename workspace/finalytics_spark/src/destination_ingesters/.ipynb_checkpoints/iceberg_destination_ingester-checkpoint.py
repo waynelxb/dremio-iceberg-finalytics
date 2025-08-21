@@ -55,7 +55,7 @@ class IcebergDestinationIngester:
             self._load_source_df_to_iceberg_raw_table(source_df, iceberg_raw_table)
             logger.info(f"Merging {iceberg_raw_table} into fin table...")
             self._merge_iceberg_raw_to_fin()
-            logger.info("EOD records loaded successfully.")
+            logger.info("Records were loaded successfully.")
         except Exception as e:
             logger.error(f"An error occurred during source data loading: {e}", exc_info=True)
             raise

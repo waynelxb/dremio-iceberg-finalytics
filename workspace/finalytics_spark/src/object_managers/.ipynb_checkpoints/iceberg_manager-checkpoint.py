@@ -1,3 +1,4 @@
+import logging
 import yaml
 import pyspark
 import pandas as pd
@@ -6,6 +7,9 @@ from .schema_manager import SchemaManager
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StructField, StringType, FloatType, TimestampType, LongType
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class IcebergManager:
@@ -75,16 +79,21 @@ class IcebergManager:
             source_df = self.spark_session.createDataFrame(source_df, schema=schema)  
             # source_df=self.spark_session.createDataFrame(source_df)
             
-            self.spark_session.sql("CREATE NAMESPACE IF NOT EXISTS nessie.raw;")           
-            create_table_script = schema_manager.get_create_table_query("tables", iceberg_table) 
-            self.spark_session.sql(create_table_script)
+            self.spark_session.sql("CREATE NAMESPACE IF NOT EXISTS nessie.raw;")  
+
+            # Check if the Iceberg table exists, if not, create it
+            if self.spark_session.catalog.tableExists(iceberg_table):
+                logger.info(f"Since the iceberg table {iceberg_table} does not exist, it will be created.")
+                create_table_script = schema_manager.get_create_table_query("tables", iceberg_table) 
+                print(create_table_script)            
+                self.spark_session.sql(create_table_script)
             
             source_df.writeTo(iceberg_table).append()
             # source_df.write.mode("overwrite").saveAsTable(iceberg_table) 
            
             incremental_count=source_df.count()
             total_count=self.spark_session.table(iceberg_table).count()
-    
+            logger.info(f"Since the iceberg table {iceberg_table} does not exist, it will be created.")
             print(f"{iceberg_table} was loaded with {incremental_count} records, totally {total_count} records.")
             
         except Exception as e:
@@ -95,8 +104,10 @@ class IcebergManager:
         # Check if the Iceberg table exists and truncate it if it does
         if self.spark_session.catalog.tableExists(iceberg_table):
             self.spark_session.sql(f"TRUNCATE TABLE {iceberg_table}")
+            logger.info(f"{iceberg_raw_table} was loaded successfully.")
             print(f"Iceberg table {iceberg_table} was truncated successfully.")
         else:
+            logger.info(f"Because the iceberg table {iceberg_table} does not exist, no truncation happened.")
             print(f"Iceberg table {iceberg_table} does not exist.")
         
     def insert_iceberg_data_into_pg(self, source_iceberg_table, sink_pg_table, jdbc_url, jdbc_properties, mode):   

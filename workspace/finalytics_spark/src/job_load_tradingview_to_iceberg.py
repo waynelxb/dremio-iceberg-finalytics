@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Dict, Any
 import yaml
 
-from etl_pipelines.file_to_iceberg_pipeline import FileToIcebergPipeline
+from etl_pipelines.tradingview_to_iceberg_pipeline import TradingViewToIcebergPipeline
 
 # Configure logging with timestamps
 logging.basicConfig(
@@ -66,7 +66,7 @@ def main(job_name: str):
             raise ValueError(f"Missing 'job_parameters' for job '{job_name}'.")
 
         # Initialize and execute the pipeline
-        pipeline_executer = FileToIcebergPipeline(
+        pipeline_executer = TradingViewToIcebergPipeline(
             connection_config_file_path=project_dir_path / job_params["connection_config_file"],
             schema_config_file_path=project_dir_path / job_params["schema_config_file"],
             source_file_path=project_dir_path / job_params["source_file_path"],

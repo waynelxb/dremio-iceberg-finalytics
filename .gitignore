@@ -15,3 +15,4 @@ workspace/.Trash-0/info/
 *.trashinfo
 postgres/
 minio-volume/seed/
+workspace/.Trash-0/
