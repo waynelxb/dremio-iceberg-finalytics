@@ -283,8 +283,49 @@ tables:
       nullable: false
 
 
+  nessie.raw.spy_composit:
+    schema:
+    - name: symbol
+      type: StringType
+      nullable: false
+    - name: Marketcap
+      type: StringType
+      nullable: true
+    - name: Price
+      type: StringType
+      nullable: true
+    - name: Change_Pct
+      type: StringType
+      nullable: true
+    - name: Volume
+      type: StringType
+      nullable: true
+    - name: RelVolume
+      type: StringType
+      nullable: true
+    - name: PE
+      type: StringType
+      nullable: true
+    - name: EPSdilTTM
+      type: StringType
+      nullable: true
+    - name: EPSdilgrowthTTMYoY
+      type: StringType
+      nullable: true
+    - name: Divyield_PctTTM
+      type: StringType
+      nullable: true
+    - name: Sector
+      type: StringType
+      nullable: true
+    - name: AnalystRating
+      type: StringType
+      nullable: true      
+    - name: import_time
+      type: TimestampType
+      nullable: false
 
 
-
+\
 
     

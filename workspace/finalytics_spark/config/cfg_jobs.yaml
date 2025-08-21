@@ -8,7 +8,7 @@ jobs:
 
       # equity_type: etf # Type of equity (e.g., "etf", "stock") 
       record_type: eod_quote
-
+      
       query_grouped_symbol: |
         SELECT group_id, group_start_date, symbol
         FROM fin.ufn_etl_get_grouped_etf_eod_start_date(5)
@@ -93,10 +93,6 @@ jobs:
       # pg_stage_table: stage.etf_symbol_sa
       # script_merge_pg_stage_into_fin: call fin.usp_load_etf_symbol()
 
-
-
-
-
   sync_yahoo_stock_profile_to_pg:
     job_parameters:
       connection_config_file: "config/cfg_connections.yaml" # Path to connection config
@@ -104,13 +100,7 @@ jobs:
       spark_app_name: finalytics_spark # Name of the Spark application
       iceberg_raw_table: nessie.raw.stock_profile_yahoo
       pg_stage_table: stage.stock_profile_yahoo
-      script_merge_pg_stage_into_fin: call fin.usp_load_stock_profile()
-
-
-
-
-
-      
+      script_merge_pg_stage_into_fin: call fin.usp_load_stock_profile()  
 
   sync_yahoo_stock_market_quote_to_pg:
     job_parameters:
@@ -138,6 +128,18 @@ jobs:
       iceberg_raw_table: nessie.raw.etf_symbol_sa
       pg_stage_table: stage.etf_symbol_sa
       script_merge_pg_stage_into_fin: call fin.usp_load_etf_symbol()
+
+  load_yahoo_stock_market_quotes_to_iceberg:
+    job_parameters:
+      connection_config_file: "config/cfg_connections.yaml" # Path to connection config
+      schema_config_file: "config/cfg_schemas.yaml" # Path to schema config
+      spark_app_name: finalytics_spark # Name of the Spark application
+      iceberg_raw_table: nessie.raw.etf_component_spy
+      pg_stage_table: stage.etf_component_spy
+      pg_url_query: "SELECT url FROM fin.vw_etl_tradingview_etf_component_spy WHERE etf_symbol ='SPY'"
+      script_merge_pg_stage_into_fin: call fin.usp_load_etf_symbol()
+  
+
 
 
 

@@ -1,3 +1,29 @@
+
+PS D:\Users\me\Projects\GitHub\docker-containers\docker-iceberg-finalytics\docker> docker build . -t spark-jupyterlab -f spark-jupyterlab.Dockerfile   
+PS D:\Users\me\Projects\GitHub\docker-containers\docker-iceberg-finalytics\docker> docker build . -t superset-dashboard -f superset-dashboard.Dockerfile
+
+generate containers:
+PS D:\Users\me\Projects\GitHub\docker-containers\docker-iceberg-finalytics\docker> docker-compose -f docker-compose-dremio.yml up -d   
+connect to dremio, set up user waynelxb
+
+create images from contianers:
+PS D:\Users\me\Projects\GitHub\docker-containers\docker-iceberg-finalytics\docker> docker commit --author waynelxb@gmail.com minio minio-finalytics
+PS D:\Users\me\Projects\GitHub\docker-containers\docker-iceberg-finalytics\docker> docker commit --author waynelxb@gmail.com nessie nessie-finalytics
+PS D:\Users\me\Projects\GitHub\docker-containers\docker-iceberg-finalytics\docker> docker commit --author waynelxb@gmail.com dremio dremio-finalytics
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Docker Compose Setup for Data Engineering with Nessie, MinIO, Spark, and Dremio
 
 This documentation covers the services defined in the `docker-compose.yml` file, how to spin up and down the services, and where to place seed data for the MinIO and Spark containers.
