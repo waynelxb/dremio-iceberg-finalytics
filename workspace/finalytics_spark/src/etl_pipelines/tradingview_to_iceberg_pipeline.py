@@ -2,7 +2,7 @@ import logging
 from pathlib import Path
 from typing import List
 
-from source_fetchers.raw_trading_view_data_fetcher import RawTradingViewDataFetcher
+from source_fetchers.raw_tradingview_data_fetcher import RawTradingViewDataFetcher
 from destination_ingesters.iceberg_destination_ingester import IcebergDestinationIngester
 from object_managers.database_manager import PgDBManager
 
@@ -19,23 +19,24 @@ class TradingViewToIcebergPipeline:
     def __init__(self,
                  connection_config_file_path: Path,
                  schema_config_file_path: Path,
-                 spark_app_name: str,
-                 iceberg_raw_table: str):
+                 spark_app_name: str,                 
+                 iceberg_raw_table: str,
+                 query_tradingview_url: str
+                ):
         """
         Initializes the Iceberg Ingestion Pipeline Executor.
 
         :param connection_config_file_path: Path to the PostgreSQL connection configuration file.
         :param schema_config_file_path: Path to the schema configuration file.
-        :param record_type: Type of record to fetch from Yahoo API.
-        :param query_grouped_symbol: SQL query to fetch grouped symbols.
         :param spark_app_name: Name of the Spark application.
         :param iceberg_raw_table: Name of the Iceberg table for raw data ingestion.
         """
 
         self.connection_config_file_path = connection_config_file_path
         self.schema_config_file_path = schema_config_file_path
-        self.spark_app_name = spark_app_name
+        self.spark_app_name = spark_app_name        
         self.iceberg_raw_table = iceberg_raw_table
+        self.query_tradingview_url=query_tradingview_url
 
         # Initialize the PostgreSQL database manager
         self.fin_db_manager = PgDBManager(self.connection_config_file_path)

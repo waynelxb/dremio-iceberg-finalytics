@@ -61,6 +61,7 @@ def main(job_name: str):
             raise ValueError(f"Job '{job_name}' not found in the configuration file.")
 
         job_params = jobs[job_name].get("job_parameters", {})
+        print(job_params)
         if not job_params:
             logger.error(f"Missing 'job_parameters' for job '{job_name}'.")
             raise ValueError(f"Missing 'job_parameters' for job '{job_name}'.")
@@ -69,15 +70,15 @@ def main(job_name: str):
         pipeline_executer = TradingViewToIcebergPipeline(
             connection_config_file_path=project_dir_path / job_params["connection_config_file"],
             schema_config_file_path=project_dir_path / job_params["schema_config_file"],
-            source_file_path=project_dir_path / job_params["source_file_path"],
-            source_file_delimiter=job_params["source_file_delimiter"],
-            spark_app_name=job_params["spark_app_name"],
-            iceberg_raw_table=job_params["iceberg_raw_table"]
+            spark_app_name=job_params["spark_app_name"],            
+            iceberg_raw_table=job_params["iceberg_raw_table"],
+            query_tradingview_url=job_params["query_tradingview_url"]
+            
         )
 
-        logger.info(f"Starting pipeline execution for job: {job_name}")
-        pipeline_executer.execute_pipeline()
-        logger.info(f"Pipeline execution completed successfully for job: {job_name}")
+        # logger.info(f"Starting pipeline execution for job: {job_name}")
+        pipeline_executer.get_tradingview_url_list()
+        # logger.info(f"Pipeline execution completed successfully for job: {job_name}")
 
     except FileNotFoundError as e:
         logger.critical(f"Configuration file missing: {e}")

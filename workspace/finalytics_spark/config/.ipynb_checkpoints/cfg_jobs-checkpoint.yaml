@@ -31,6 +31,7 @@ jobs:
         SELECT group_id, group_start_date, symbol
         FROM fin.ufn_etl_get_grouped_stock_eod_start_date(5)
         WHERE group_id <=1
+        
 
       iceberg_raw_table: nessie.raw.stock_eod_yahoo
       pg_stage_table: stage.stock_eod_quote_yahoo
@@ -129,18 +130,15 @@ jobs:
       pg_stage_table: stage.etf_symbol_sa
       script_merge_pg_stage_into_fin: call fin.usp_load_etf_symbol()
 
-  load_yahoo_stock_market_quotes_to_iceberg:
+  load_tradingview_spy_component_to_iceberg:
     job_parameters:
       connection_config_file: "config/cfg_connections.yaml" # Path to connection config
       schema_config_file: "config/cfg_schemas.yaml" # Path to schema config
       spark_app_name: finalytics_spark # Name of the Spark application
-      iceberg_raw_table: nessie.raw.etf_component_spy
-      pg_stage_table: stage.etf_component_spy
-      pg_url_query: "SELECT url FROM fin.vw_etl_tradingview_etf_component_spy WHERE etf_symbol ='SPY'"
-      script_merge_pg_stage_into_fin: call fin.usp_load_etf_symbol()
-  
-
-
+      iceberg_raw_table: nessie.raw.tradingview_etf_component
+      query_tradingview_url: |
+          SELECT url FROM fin.vw_etl_tradingview_etf_component_spy WHERE etf_symbol ='SPY'
+      # script_merge_pg_stage_into_fin: call fin.usp_tradingview_etf_component()
 
 
 
