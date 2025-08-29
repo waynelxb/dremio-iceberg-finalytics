@@ -1,3 +1,9 @@
+# TradingView provides data of the components of indexes
+# This fetcher is to fetch the data of SPY components from Trading View URLs
+# The input URLs will be put in a list
+
+import sys
+import traceback
 import requests
 import json
 import traceback
@@ -73,7 +79,7 @@ class RawTradingViewDataFetcher:
             message = "Error(-1): The data cannot be downloaded. <Except Message: " + exceptMessage + "> <Quote URL: "
             print(message)
 
-    def concatenate_raw_data(self):
+    def concatenate_tradingview_raw_data(self):
         all_record_tuple_list=[]
         for url in self.url_list:
             # print(url)
@@ -84,7 +90,7 @@ class RawTradingViewDataFetcher:
 url_list = ["https://www.tradingview.com/symbols/SP-S5CONS/components/","https://www.tradingview.com/symbols/SP-S5MATR/components/"]   
 
 MyRawTradingViewDataFetcher=RawTradingViewDataFetcher(url_list)
-x=MyRawTradingViewDataFetcher.concatenate_raw_data()
+x=MyRawTradingViewDataFetcher.concatenate_tradingview_raw_data()
 print(x)
 
 

@@ -2,7 +2,8 @@
 # This fetcher is to fetch the data of SPY components from Trading View URLs
 # The input URLs will be put in a list
 
-
+import sys
+import traceback
 import requests
 import json
 import traceback
@@ -89,7 +90,7 @@ class RawTradingViewDataFetcher:
 # url_list = ["https://www.tradingview.com/symbols/SP-S5CONS/components/","https://www.tradingview.com/symbols/SP-S5MATR/components/"]   
 
 # MyRawTradingViewDataFetcher=RawTradingViewDataFetcher(url_list)
-# x=MyRawTradingViewDataFetcher.concatenate_raw_data()
+# x=MyRawTradingViewDataFetcher.concatenate_tradingview_raw_data()
 # print(x)
 
 

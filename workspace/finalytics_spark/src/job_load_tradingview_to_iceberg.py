@@ -77,7 +77,7 @@ def main(job_name: str):
         )
 
         # logger.info(f"Starting pipeline execution for job: {job_name}")
-        pipeline_executer.get_tradingview_url_list()
+        pipeline_executer.execute_pipeline()
         # logger.info(f"Pipeline execution completed successfully for job: {job_name}")
 
     except FileNotFoundError as e:

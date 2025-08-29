@@ -6,7 +6,7 @@ storage_uri = "http://172.22.0.20:9000"      # Minio IP address from docker insp
 spark_master_uri = "spark://172.22.0.30:7077"
 
 [databases.postgresql.finalytics]
-host = "192.168.1.222"
+host = "192.168.110.222"
 port = "5432"
 user = "postgres"
 password = "HDdimension1!"
