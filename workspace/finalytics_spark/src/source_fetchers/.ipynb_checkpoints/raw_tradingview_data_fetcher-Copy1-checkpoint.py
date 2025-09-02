@@ -79,12 +79,12 @@ class RawTradingViewDataFetcher:
             message = "Error(-1): The data cannot be downloaded. <Except Message: " + exceptMessage + "> <Quote URL: "
             print(message)
 
-    # def concatenate_tradingview_raw_data(self):
-    #     all_record_tuple_list=[]
-    #     for url in self.url_list:
-    #         # print(url)
-    #         all_record_tuple_list.extend(self.scrape_tradingview_data_from_url(url))
-    #     return all_record_tuple_list
+    def concatenate_tradingview_raw_data(self):
+        all_record_tuple_list=[]
+        for url in self.url_list:
+            # print(url)
+            all_record_tuple_list.extend(self.scrape_tradingview_data_from_url(url))
+        return all_record_tuple_list
 
 
 # url_list = ["https://www.tradingview.com/symbols/SP-S5CONS/components/","https://www.tradingview.com/symbols/SP-S5MATR/components/"]   

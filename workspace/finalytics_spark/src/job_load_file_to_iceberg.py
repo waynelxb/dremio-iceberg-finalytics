@@ -17,7 +17,6 @@ logger = logging.getLogger(__name__)
 def load_config(config_file_path: Path) -> Dict[str, Any]:
     """
     Loads a YAML configuration file.
-
     :param config_file_path: Path to the configuration file.
     :return: Dictionary containing configuration data.
     :raises FileNotFoundError: If the configuration file does not exist.
@@ -47,7 +46,7 @@ def main(job_name: str):
     :param job_name: The name of the job to execute.
     """
     try:
-        # Determine the project directory and configuration file path
+        # Determine the project directory and build job configuration file path
         project_dir_path = Path(__file__).resolve().parent.parent
         config_file_path = project_dir_path / "config/cfg_jobs.yaml"
 
@@ -64,6 +63,11 @@ def main(job_name: str):
         if not job_params:
             logger.error(f"Missing 'job_parameters' for job '{job_name}'.")
             raise ValueError(f"Missing 'job_parameters' for job '{job_name}'.")
+
+
+
+
+            
 
         # Initialize and execute the pipeline
         pipeline_executer = FileToIcebergPipeline(

@@ -132,7 +132,8 @@ jobs:
 
   load_tradingview_spy_component_to_iceberg:
     job_parameters:
-      connection_config_file: "config/cfg_connections.yaml" # Path to connection config
+      db_connection_config_file: "config/cfg_connections.yaml" # Path to connection config
+      db_connection: finalytics_conn
       schema_config_file: "config/cfg_schemas.yaml" # Path to schema config
       spark_app_name: finalytics_spark # Name of the Spark application
       iceberg_raw_table: nessie.raw.tradingview_etf_component

@@ -1,7 +1,7 @@
 import psycopg2
 import yaml
 from pathlib import Path
-
+import psycopg
 
 class PgDBManager:
 
@@ -60,3 +60,52 @@ class PgDBManager:
                     conn.commit()
         except Exception as e:
             print(f"An error occurred: {e}")
+
+
+
+class PgDBManager2:
+    def __init__(self, db_conn_uri):          
+        self.conn = psycopg.connect(db_conn_uri)
+        
+    def get_sql_script_result_list(self, query):
+        try:          
+            with self.conn.cursor() as cursor:  # Cursor context
+                # Execute query
+                cursor.execute(query)
+                # Fetch results
+                results = cursor.fetchall()
+            return results
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            return None
+
+    def get_sql_script_result(self, query):
+        try:
+            with self.conn.cursor() as cursor:  # Cursor context
+                # Execute query
+                cursor.execute(query)
+                # Fetch results
+                results = cursor.fetchall()
+            return results
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            return None
+
+    
+    def execute_sql_script(self, sql_script):
+        try:
+            with self.conn.cursor() as cursor:  # Cursor context
+                cursor.execute(sql_script)
+                conn.commit()
+        except Exception as e:
+            print(f"An error occurred: {e}")
+
+# uri="postgresql://postgres:HDdimension1!@192.168.110.222:5432/finalytics"
+# myPgDBManager= PgDBManager2(uri)
+# query = "SELECT url FROM fin.vw_etl_tradingview_etf_component_spy WHERE etf_symbol ='SPY'"
+# x=myPgDBManager.get_sql_script_result_list(query)
+# print(x)
+
+
+
+

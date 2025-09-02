@@ -1,0 +1,11 @@
+loader_parameters:
+  conn_config_file: /opt/workspace/finalytics_spark/config/cfg_conn.yaml
+  conn_config_db_uri_key: ['databases', 'finalytics', 'connection_uri']
+  
+  schema_config_file: /opt/workspace/finalytics_spark/config/cfg_schemas.yaml
+  schema_config_iceberg_raw_table_key: ["tables","nessie.raw.tradingview_etf_component"]
+
+  spark_app_name: finalytics_spark
+  tradingview_url_query: >
+    SELECT url FROM fin.vw_etl_tradingview_etf_component_spy WHERE etf_symbol
+    ='SPY'  

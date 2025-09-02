@@ -22,16 +22,16 @@ logger = logging.getLogger(__name__)
 
 
 class RawTradingViewDataFetcher:
-    def __init__(self, url_list):
-        self.url_list = url_list
+    def __init__(self, url):
+        self.url = url
         self.current_datetime_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    def scrape_tradingview_data_from_url(self, url):               
+    def scrape_tradingview_data_from_url(self):               
         try:     
             # Scrape data from URL
             # url = "https://www.tradingview.com/symbols/SP-S5CONS/components/"  
             timeout_seconds = 5
-            req = requests.get(url, timeout=timeout_seconds)      
+            req = requests.get(self.url, timeout=timeout_seconds)      
             html = req.text
             soup = BeautifulSoup(html, 'html.parser')
             
@@ -50,8 +50,7 @@ class RawTradingViewDataFetcher:
                 StructField(field, eval('StringType')(), True)
                 for field in field_list
             ])
-            # print(schema)
-            
+            # print(schema)            
             # Get Records        
             # Each record is a tuple, record_tuple_list is a collection of records
             record_tuple_list=[]
@@ -59,14 +58,14 @@ class RawTradingViewDataFetcher:
                 tag_a = tag_tr.find('a', attrs={'class': re.compile('^tickerName.*')})
                 ticker = tag_a.text
                 record = ""
-                record_list=[ticker]
+                field_list=[ticker]
                 for tag_td in tag_tr.select("td[class*='cell-']"):
                     if tag_td.text.find(ticker) < 0:
-                        record_list.append(tag_td.text.replace("\u202f", ""))
-                record_list.append(self.current_datetime_str)
+                        field_list.append(tag_td.text.replace("\u202f", ""))
+                field_list.append(self.current_datetime_str)
                 # Tuple is immutable in Python, so we cannot append an element to a tuple. 
                 # This is why we need to build up the list first then convert it to a tuple.
-                record_tuple= tuple(record_list)
+                record_tuple= tuple(field_list)
                 record_tuple_list.append(record_tuple)
             return record_tuple_list        
             # # Create dataframe
@@ -79,12 +78,12 @@ class RawTradingViewDataFetcher:
             message = "Error(-1): The data cannot be downloaded. <Except Message: " + exceptMessage + "> <Quote URL: "
             print(message)
 
-    # def concatenate_tradingview_raw_data(self):
-    #     all_record_tuple_list=[]
-    #     for url in self.url_list:
-    #         # print(url)
-    #         all_record_tuple_list.extend(self.scrape_tradingview_data_from_url(url))
-    #     return all_record_tuple_list
+    def concatenate_tradingview_raw_data(self):
+        all_record_tuple_list=[]
+        for url in self.url_list:
+            # print(url)
+            all_record_tuple_list.extend(self.scrape_tradingview_data_from_url(url))
+        return all_record_tuple_list
 
 
 # url_list = ["https://www.tradingview.com/symbols/SP-S5CONS/components/","https://www.tradingview.com/symbols/SP-S5MATR/components/"]   

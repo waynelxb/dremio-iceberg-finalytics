@@ -15,5 +15,18 @@ databases:
       password: "HDdimension1!"
       database: "finalytics"
       driver: "org.postgresql.Driver" 
+      connection_string: "dbname=finalytics user=postgres password=HDdimension1! host=192.168.110.222 port=5432")
+      connection_uri: "postgresql://postgres:HDdimension1!@192.168.110.222:5432/finalytics"
+
+    finalytics_conn:
+      connection_uri: "postgresql://postgres:HDdimension1!@192.168.110.222:5432/finalytics"
+      driver: "org.postgresql.Driver" 
+
+
+mydatabases:
+  finalytics:
+    connection_uri: "postgresql://postgres:HDdimension1!@192.168.110.222:5432/finalytics"
+    driver: "org.postgresql.Driver" 
+      
 
 

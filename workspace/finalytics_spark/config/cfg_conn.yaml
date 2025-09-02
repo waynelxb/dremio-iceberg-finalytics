@@ -1,0 +1,14 @@
+spark: 
+  description: "This is for nessie catalog"
+  catalog_uri: "http://nessie:19120/api/v1"  # Nessie Server URI
+  warehouse: "s3://warehouse/"               # Minio Address to Write to
+  storage_uri: "http://172.22.0.20:9000"      # Minio IP address from docker inspect
+  spark_master_uri: "spark://172.22.0.30:7077"
+
+databases:
+  finalytics:
+    connection_uri: "postgresql://postgres:HDdimension1!@192.168.110.222:5432/finalytics"
+    driver: "org.postgresql.Driver" 
+      
+
+
