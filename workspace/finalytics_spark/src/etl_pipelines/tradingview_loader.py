@@ -29,26 +29,13 @@ class TradingViewLoader:
         :param schema_config_file_path: Path to the schema configuration file.
         :param spark_app_name: Name of the Spark application.
         :param iceberg_raw_table: Name of the Iceberg table for raw data ingestion.
-        """    
-        # Load YAML configuration
-        # with open(connection_config_file_path, 'r') as file:
-        #     config = yaml.safe_load(file)
-        #     pg_config= config['databases']['postgresql']['finalytics']            
-        #     self.pg_db_conn_params = {
-        #                 "host": pg_config["host"],
-        #                 "port": pg_config["port"],
-        #                 "user": pg_config["user"],
-        #                 "password": pg_config["password"],
-        #                 "database": pg_config["database"]  # psycopg2 uses "dbname" instead of "database"
-        #             }           
-
+        """         
         
         self.db_conn_uri=db_conn_uri
         self.spark_app_name = spark_app_name        
         self.iceberg_raw_table = iceberg_raw_table
         self.iceberg_raw_table_schema = iceberg_raw_table_schema
-        self.tradingview_url_query=tradingview_url_query
-        
+        self.tradingview_url_query=tradingview_url_query        
         # Initialize the PostgreSQL database manager
         self.fin_db_manager = PgDBManager2(self.db_conn_uri)   
         
@@ -87,30 +74,34 @@ class TradingViewLoader:
             logger.error(f"Error fetching data from Yahoo API: {e}", exc_info=True)
             raise
 
-    # def ingest_data(self, raw_yahoo_df):
-    #     """
-    #     Ingests the raw Yahoo data into the Iceberg table.
+    def ingest_data_into_iceberg(self, record_schema, records):
+        """
+        Ingests the raw Yahoo data into the Iceberg table.
+        :param raw_yahoo_df: DataFrame containing Yahoo data.
+        """
 
-    #     :param raw_yahoo_df: DataFrame containing Yahoo data.
-    #     """
-    #     if raw_yahoo_df is None or raw_yahoo_df.empty:
-    #         logger.warning("No data available for ingestion. Skipping Iceberg ingestion step.")
-    #         return
+        df = spark.createDataFrame(records, record_schema)
+        # df.select("symbol", "Sector","ImportDatetime").show()   
+        
+        
+        if raw_yahoo_df is None or raw_yahoo_df.empty:
+            logger.warning("No data available for ingestion. Skipping Iceberg ingestion step.")
+            return
 
-    #     logger.info(f"Ingesting data into Iceberg table '{self.iceberg_raw_table}'...")
-    #     try:
-    #         yahoo_data_iceberg_ingester = IcebergDestinationIngester(
-    #             self.connection_config_file_path,
-    #             self.schema_config_file_path,
-    #             self.spark_app_name
-    #         )
-    #         yahoo_data_iceberg_ingester.ingest_data_to_destination(raw_yahoo_df, self.iceberg_raw_table)
-    #         logger.info("Data ingestion to Iceberg completed successfully.")
-    #     except Exception as e:
-    #         logger.error(f"Error ingesting data to Iceberg: {e}", exc_info=True)
-    #         raise
+        logger.info(f"Ingesting data into Iceberg table '{self.iceberg_raw_table}'...")
+        try:
+            yahoo_data_iceberg_ingester = IcebergDestinationIngester(
+                self.connection_config_file_path,
+                self.schema_config_file_path,
+                self.spark_app_name
+            )
+            yahoo_data_iceberg_ingester.ingest_data_to_destination(raw_yahoo_df, self.iceberg_raw_table)
+            logger.info("Data ingestion to Iceberg completed successfully.")
+        except Exception as e:
+            logger.error(f"Error ingesting data to Iceberg: {e}", exc_info=True)
+            raise
 
-    def execute_pipeline(self):
+    def run_loader(self):
         """
         Executes the complete data pipeline:  
         - Fetch grouped symbols from PostgreSQL.  
@@ -120,7 +111,7 @@ class TradingViewLoader:
         try:
             # tradingview_url_list = self.get_tradingview_url_list()
             tradingview_data = self.fetch_tradingview_data()
-            print(tradingview_data)
+            # print(tradingview_data)
             # raw_yahoo_df = self.fetch_yahoo_data(grouped_symbol_list)
             # self.ingest_data(raw_yahoo_df)
 

@@ -46,11 +46,11 @@ class RawTradingViewDataFetcher:
             field_list.append("ImportDatetime")
             
             # Build raw data schema
-            schema = StructType([
+            record_schema = StructType([
                 StructField(field, eval('StringType')(), True)
                 for field in field_list
             ])
-            # print(schema)
+            # print(record_schema)
             
             # Get Records        
             # Each record is a tuple, record_tuple_list is a collection of records
@@ -79,19 +79,19 @@ class RawTradingViewDataFetcher:
             message = "Error(-1): The data cannot be downloaded. <Except Message: " + exceptMessage + "> <Quote URL: "
             print(message)
 
-    def concatenate_tradingview_raw_data(self):
-        all_record_tuple_list=[]
-        for url in self.url_list:
-            # print(url)
-            all_record_tuple_list.extend(self.scrape_tradingview_data_from_url(url))
-        return all_record_tuple_list
+    # def concatenate_tradingview_raw_data(self):
+    #     all_record_tuple_list=[]
+    #     for url in self.url_list:
+    #         # print(url)
+    #         all_record_tuple_list.extend(self.scrape_tradingview_data_from_url(url))
+    #     return all_record_tuple_list
 
 
-url_list = ["https://www.tradingview.com/symbols/SP-S5CONS/components/","https://www.tradingview.com/symbols/SP-S5MATR/components/"]   
+# url_list = ["https://www.tradingview.com/symbols/SP-S5CONS/components/","https://www.tradingview.com/symbols/SP-S5MATR/components/"]   
 
-MyRawTradingViewDataFetcher=RawTradingViewDataFetcher(url_list)
-x=MyRawTradingViewDataFetcher.concatenate_tradingview_raw_data()
-print(x)
+# MyRawTradingViewDataFetcher=RawTradingViewDataFetcher(url_list)
+# x=MyRawTradingViewDataFetcher.concatenate_tradingview_raw_data()
+# print(x)
 
 
 

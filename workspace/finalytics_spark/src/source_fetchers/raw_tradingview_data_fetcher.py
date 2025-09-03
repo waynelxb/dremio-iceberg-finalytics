@@ -46,11 +46,11 @@ class RawTradingViewDataFetcher:
             field_list.append("ImportDatetime")
             
             # Build raw data schema
-            schema = StructType([
+            record_schema = StructType([
                 StructField(field, eval('StringType')(), True)
                 for field in field_list
             ])
-            # print(schema)
+            # print(record_schema)
             
             # Get Records        
             # Each record is a tuple, record_tuple_list is a collection of records

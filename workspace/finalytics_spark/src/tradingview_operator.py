@@ -7,7 +7,7 @@ import os
 from functools import reduce
 import operator
 
-from etl_pipelines.tradingview_to_iceberg_loader import TradingViewLoader
+from etl_pipelines.tradingview_loader import TradingViewLoader
 
 # Configure logging with timestamps
 logging.basicConfig(
@@ -50,23 +50,19 @@ def main(loader_config_file: str):
         db_conn_uri = get_nested_dict(db_config, db_conn_uri_key)
         print(db_conn_uri)     
 
-
-        
+       
         ## Get iceberg raw table schema
         # Get schema configuration file path from loader configuration file
         schema_config_file=loader_config["loader_parameters"]['schema_config_file']
-        # Get db conn uri key path in configuration file
-        # print(schema_config_file)        
+        # Get table key path in schema configuration file     
         iceberg_raw_table_key=loader_config["loader_parameters"]['schema_config_iceberg_raw_table_key']    
         iceberg_raw_table=iceberg_raw_table_key[1]
-        # print(iceberg_raw_table)
         
         # Read schema configuration file to get table schema
         with open(schema_config_file, "r") as file:
             schema_config = yaml.safe_load(file)       
         iceberg_raw_table_schema = get_nested_dict(schema_config, iceberg_raw_table_key)
-        print(iceberg_raw_table_schema) 
-
+        # print(iceberg_raw_table_schema) 
 
 
         
@@ -89,7 +85,7 @@ def main(loader_config_file: str):
         )
 
         # logger.info(f"Starting pipeline execution for job: {loader_config_file}")
-        # pipeline_executer.execute_pipeline()
+        DataLoader.run_loader()
         # logger.info(f"Pipeline execution completed successfully for job: {loader_config_file}")
 
     except FileNotFoundError as e:
