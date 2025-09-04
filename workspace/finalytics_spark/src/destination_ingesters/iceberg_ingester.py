@@ -32,10 +32,10 @@ class IcebergIngester:
         
         # Initialize database and Iceberg managers
         self.iceberg_manager = IcebergManager(
-            self.spark_app_name          
-            self.catalog_uri
-            self.warehouse   # Minio Address to Write to
-            self.storage_uri  # Minio IP address from docker inspec
+            self.spark_app_name,         
+            self.catalog_uri,
+            self.warehouse,   # Minio Address to Write to
+            self.storage_uri,  # Minio IP address from docker inspec
             self.spark_master_uri  # Minio IP address from docker inspec            
         )    
         self.spark_session=self.iceburg_manager.get_spark_session()
