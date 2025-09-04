@@ -3,8 +3,9 @@ from pathlib import Path
 from typing import List
 
 from source_fetchers.raw_tradingview_data_fetcher import RawTradingViewDataFetcher
-# from destination_ingesters.iceberg_destination_ingester import IcebergDestinationIngester
+from destination_ingesters.iceberg_ingester import IcebergIngester
 from object_managers.database_manager import PgDBManager2
+from object_managers.spark_table_manager import SparkTableManager
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
@@ -17,27 +18,37 @@ class TradingViewLoader:
     """
 
     def __init__(self,
-                 db_conn_uri,
-                 iceberg_raw_table, 
-                 iceberg_raw_table_schema,
-                 spark_app_name,                 
-                 tradingview_url_query
+                 pgdb_conn_uri,
+                 source_url_query,
+                 spark_app_name, 
+                 spark_conn_params,
+                 iceberg_raw_table_name, 
+                 iceberg_raw_table_definition
                 ):
         """
         Initializes the Iceberg Ingestion Pipeline Executor.
         :param connection_config_file_path: Path to the PostgreSQL connection configuration file.
         :param schema_config_file_path: Path to the schema configuration file.
         :param spark_app_name: Name of the Spark application.
-        :param iceberg_raw_table: Name of the Iceberg table for raw data ingestion.
+        :param iceberg_raw_table_name: Name of the Iceberg table for raw data ingestion.
         """         
         
-        self.db_conn_uri=db_conn_uri
+        self.pgdb_conn_uri=pgdb_conn_uri
         self.spark_app_name = spark_app_name        
-        self.iceberg_raw_table = iceberg_raw_table
-        self.iceberg_raw_table_schema = iceberg_raw_table_schema
-        self.tradingview_url_query=tradingview_url_query        
+        self.iceberg_raw_table_name = iceberg_raw_table_name
+        self.iceberg_raw_table_definition = iceberg_raw_table_definition
+        self.source_url_query=source_url_query     
+        
         # Initialize the PostgreSQL database manager
-        self.fin_db_manager = PgDBManager2(self.db_conn_uri)   
+        self.fin_db_manager = PgDBManager2(self.pgdb_conn_uri)   
+        
+        self.iceberg_raw_table_manager = SparkTableManager(self.iceberg_raw_table_name, self.iceberg_raw_table_definition)
+        self.iceberg_raw_table_schema=self.iceberg_raw_table_manager.get_spark_table_schema()
+
+        print(self.iceberg_raw_table_schema)
+
+
+
         
 
     def get_tradingview_url_list(self) -> List[str]:
@@ -47,8 +58,8 @@ class TradingViewLoader:
         logger.info("Fetching Trading View url from PostgreSQL...")    
 
         try:
-            print(self.tradingview_url_query)
-            query_result = self.fin_db_manager.get_sql_script_result_list(self.tradingview_url_query)
+            print(self.source_url_query)
+            query_result = self.fin_db_manager.get_sql_script_result_list(self.source_url_query)
             tradingview_url_list = [url[0] for url in query_result]
        
             if not tradingview_url_list:
@@ -74,28 +85,31 @@ class TradingViewLoader:
             logger.error(f"Error fetching data from Yahoo API: {e}", exc_info=True)
             raise
 
-    def ingest_data_into_iceberg(self, record_schema, records):
+    def ingest_tradingview_data_into_iceberg(self):
         """
         Ingests the raw Yahoo data into the Iceberg table.
         :param raw_yahoo_df: DataFrame containing Yahoo data.
         """
+        records = self.fetch_tradingview_data()
 
-        df = spark.createDataFrame(records, record_schema)
+        
+        df = spark.createDataFrame(records, self.iceberg_raw_table_schema)
         # df.select("symbol", "Sector","ImportDatetime").show()   
         
         
-        if raw_yahoo_df is None or raw_yahoo_df.empty:
-            logger.warning("No data available for ingestion. Skipping Iceberg ingestion step.")
-            return
+        # if raw_yahoo_df is None or raw_yahoo_df.empty:
+        #     logger.warning("No data available for ingestion. Skipping Iceberg ingestion step.")
+        #     return
 
-        logger.info(f"Ingesting data into Iceberg table '{self.iceberg_raw_table}'...")
+        logger.info(f"Ingesting data into Iceberg table '{self.iceberg_raw_table_name}'...")
         try:
-            yahoo_data_iceberg_ingester = IcebergDestinationIngester(
-                self.connection_config_file_path,
-                self.schema_config_file_path,
-                self.spark_app_name
+            iceberg_ingester = IcebergIngester(
+                      spark_app_name, 
+                      spark_conn_params,
+                      iceberg_table_name,
+                      iceberg_table_schema  
             )
-            yahoo_data_iceberg_ingester.ingest_data_to_destination(raw_yahoo_df, self.iceberg_raw_table)
+            yahoo_data_iceberg_ingester.ingest_data_to_destination(raw_yahoo_df, self.iceberg_raw_table_name)
             logger.info("Data ingestion to Iceberg completed successfully.")
         except Exception as e:
             logger.error(f"Error ingesting data to Iceberg: {e}", exc_info=True)
@@ -110,7 +124,7 @@ class TradingViewLoader:
         """
         try:
             # tradingview_url_list = self.get_tradingview_url_list()
-            tradingview_data = self.fetch_tradingview_data()
+            tradingview_data = self.ingest_tradingview_data_into_iceberg()
             # print(tradingview_data)
             # raw_yahoo_df = self.fetch_yahoo_data(grouped_symbol_list)
             # self.ingest_data(raw_yahoo_df)

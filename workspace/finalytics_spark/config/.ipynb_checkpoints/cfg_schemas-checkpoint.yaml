@@ -28,9 +28,9 @@ tables:
     - name: import_time
       type: TimestampType
       nullable: false
-    # partition_by:
-    # # Optional partitioning
-    # - field: date
+    partition_by:
+    # Optional partitioning
+    - field: date
 
   nessie.raw.etf_eod_yahoo:
     schema:
@@ -283,7 +283,7 @@ tables:
       nullable: false
 
 
-  nessie.raw.spy_composit:
+  nessie.raw.tradingview_etf_component:
     schema:
     - name: symbol
       type: StringType

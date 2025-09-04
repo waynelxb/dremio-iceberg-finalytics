@@ -13,20 +13,23 @@ logger = logging.getLogger(__name__)
 
 
 class IcebergManager:
-    def __init__(self, connection_config_file_path, schema_config_file_path, spark_app_name):
-        self.connection_config_file_path = connection_config_file_path
-        self.schema_config_file_path=schema_config_file_path
+    def __init__(self, spark_app_name, warehouse, catalog_uri, storage_uri, spark_master_uri):
         self.spark_app_name=spark_app_name
-        self.spark_session = self._create_spark_session()
+        self.spark_session = self._create_spark_session()            
+        self.catalog_uri = catalog_uri
+        self.warehouse = warehouse     # Minio Address to Write to
+        self.storage_uri = storage_uri  # Minio IP address from docker inspec
+        self.spark_master_uri = spark_master_uri  # Minio IP address from docker inspec
+
         
     def _create_spark_session(self)->SparkSession:
        try:  
-            with open(self.connection_config_file_path,"r") as file:
-                config=yaml.safe_load(file)
-                catalog_uri = config['spark']['catalog_uri'] 
-                warehouse = config['spark']['warehouse']     # Minio Address to Write to
-                storage_uri = config['spark']['storage_uri'] # Minio IP address from docker inspec
-                spark_master_uri = config['spark']['spark_master_uri'] # Minio IP address from docker inspec
+            # with open(self.connection_config_file_path,"r") as file:
+            #     config=yaml.safe_load(file)
+            #     catalog_uri = config['spark']['catalog_uri'] 
+            #     warehouse = config['spark']['warehouse']     # Minio Address to Write to
+            #     storage_uri = config['spark']['storage_uri'] # Minio IP address from docker inspec
+            #     spark_master_uri = config['spark']['spark_master_uri'] # Minio IP address from docker inspec           
             
             # Configure Spark with necessary packages and Iceberg/Nessie settings
             conf = (
@@ -46,13 +49,13 @@ class IcebergManager:
                          'org.projectnessie.spark.extensions.NessieSparkSessionExtensions')
                     # Configure Nessie catalog
                     .set('spark.sql.catalog.nessie', 'org.apache.iceberg.spark.SparkCatalog')
-                    .set('spark.sql.catalog.nessie.uri', catalog_uri)
+                    .set('spark.sql.catalog.nessie.uri', self.catalog_uri)
                     .set('spark.sql.catalog.nessie.ref', 'main')
                     .set('spark.sql.catalog.nessie.authentication.type', 'NONE')
                     .set('spark.sql.catalog.nessie.catalog-impl', 'org.apache.iceberg.nessie.NessieCatalog')
                     # Set Minio as the S3 endpoint for Iceberg storage
-                    .set('spark.sql.catalog.nessie.s3.endpoint', storage_uri)
-                    .set('spark.sql.catalog.nessie.warehouse', warehouse)
+                    .set('spark.sql.catalog.nessie.s3.endpoint', self.storage_uri)
+                    .set('spark.sql.catalog.nessie.warehouse', self.warehouse)
                     .set('spark.sql.catalog.nessie.io-impl', 'org.apache.iceberg.aws.s3.S3FileIO')
                     # Set master location, the job will be sent to the cluster
                     # .set('spark.master', spark_master_uri)
@@ -71,7 +74,7 @@ class IcebergManager:
         return self.spark_session
 
 
-    def insert_into_iceberg_table(self, source_record_tuple_list, iceberg_table):
+    def insert_into_iceberg_table(self, schema, source_record_tuple_list, iceberg_table):
         try: 
             schema_manager=SchemaManager(self.schema_config_file_path)
             schema=schema_manager.get_object_schema("tables", iceberg_table)       

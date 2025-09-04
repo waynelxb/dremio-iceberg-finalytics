@@ -33,60 +33,57 @@ def main(loader_config_file: str):
         with open(loader_config_file, "r") as file:
             loader_config = yaml.safe_load(file)  
         
-        spark_app_name=loader_config["loader_parameters"]["spark_app_name"],            
-        tradingview_url_query=loader_config["loader_parameters"]["tradingview_url_query"]
+        spark_app_name=loader_config["loader_parameters"]["spark_app_name"]    
+        print(spark_app_name)
+        source_url_query=loader_config["loader_parameters"]["source_url_query"]
             
             
         ## Get db connection uri
         # Get db configuration file path from loader configuration file
-        db_config_file=loader_config["loader_parameters"]['conn_config_file']
+        conn_config_file=loader_config["loader_parameters"]["conn_config_file"]
         # Get db conn uri key path in configuration file
-        db_conn_uri_key=loader_config["loader_parameters"]['conn_config_db_uri_key']        
-        # print(db_conn_uri_key)
-        
+        conn_config_pgdb_uri_key=loader_config["loader_parameters"]["conn_config_pgdb_uri_key"]        
+        # print(db_conn_uri_key)        
         # Read db configuration file to get db conn uri
-        with open(db_config_file, "r") as file:
-            db_config = yaml.safe_load(file)        
-        db_conn_uri = get_nested_dict(db_config, db_conn_uri_key)
-        print(db_conn_uri)     
+        with open(conn_config_file, "r") as file:
+            conn_config = yaml.safe_load(file)        
+        pgdb_conn_uri = get_nested_dict(conn_config, conn_config_pgdb_uri_key)
+        # print(pgdb_conn_uri)     
 
-       
+
+        conn_config_spark_key=loader_config["loader_parameters"]["conn_config_spark_key"]
+        
+        spark_conn_params = get_nested_dict(conn_config, conn_config_spark_key)
+        print(spark_conn_params)
+
+        
         ## Get iceberg raw table schema
         # Get schema configuration file path from loader configuration file
         schema_config_file=loader_config["loader_parameters"]['schema_config_file']
         # Get table key path in schema configuration file     
-        iceberg_raw_table_key=loader_config["loader_parameters"]['schema_config_iceberg_raw_table_key']    
-        iceberg_raw_table=iceberg_raw_table_key[1]
-        
+        iceberg_raw_table_key=loader_config["loader_parameters"]['schema_config_iceberg_raw_table_key']   
+        iceberg_raw_table_name=iceberg_raw_table_key[1]        
         # Read schema configuration file to get table schema
         with open(schema_config_file, "r") as file:
             schema_config = yaml.safe_load(file)       
-        iceberg_raw_table_schema = get_nested_dict(schema_config, iceberg_raw_table_key)
-        # print(iceberg_raw_table_schema) 
+        iceberg_raw_table_definition = get_nested_dict(schema_config, iceberg_raw_table_key)
 
-
-        
-        # loader_config = load_config(Path(loader_config_file))
-        # print(loader_config)
-
-        # loader_params = loader_config.get("loader_parameters", {})
-        # print(loader_params)
-        # if not loader_params:
-        #     logger.error(f"Missing 'loader_parameters' for job '{loader_config_file}'.")
-        #     raise ValueError(f"Missing 'loader_parameters' for job '{loader_config_file}'.")        
+       
+             
 
         # Initialize and execute the pipeline
         DataLoader = TradingViewLoader(
-                 db_conn_uri,
-                 iceberg_raw_table, 
-                 iceberg_raw_table_schema,
-                 spark_app_name,                 
-                 tradingview_url_query        
+                 pgdb_conn_uri,
+                 source_url_query,
+                 spark_app_name, 
+                 spark_conn_params,
+                 iceberg_raw_table_name, 
+                 iceberg_raw_table_definition                       
         )
 
-        # logger.info(f"Starting pipeline execution for job: {loader_config_file}")
+        # # logger.info(f"Starting pipeline execution for job: {loader_config_file}")
         DataLoader.run_loader()
-        # logger.info(f"Pipeline execution completed successfully for job: {loader_config_file}")
+        # # logger.info(f"Pipeline execution completed successfully for job: {loader_config_file}")
 
     except FileNotFoundError as e:
         logger.critical(f"Configuration file missing: {e}")
@@ -111,5 +108,3 @@ if __name__ == "__main__":
     # Parse arguments and execute the job
     args = parser.parse_args()
     main(args.loader_config_file)
-
-
