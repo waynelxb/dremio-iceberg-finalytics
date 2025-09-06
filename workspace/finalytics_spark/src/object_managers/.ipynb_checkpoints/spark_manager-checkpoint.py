@@ -6,6 +6,10 @@ from pyspark.sql import SparkSession
 from .schema_manager import SchemaManager
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType, DoubleType, DateType, FloatType, TimestampType, LongType
+# Configure logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger(__name__)
+
 
 class SparkManager:    
     def __init__(self, spark_app_name, spark_conn_params):
@@ -65,9 +69,17 @@ class SparkManager:
             print(f"Error: {e}")
            
     def get_spark_session(self):
-        return self.spark_session     
+        return self.spark_session
 
-    def create_iceberg_table(self, iceberg_table_name, create_iceberg_table_script)
+    def create_spark_df_with_schema_dict(self, record_tuple_list, record_schema_dict):  
+        schema = StructType([
+            StructField(field["name"], eval(field["type"])(), field["nullable"])
+            for field in record_schema_dict["schema"]
+        ])
+        spark_df = self.spark_session.createDataFrame(record_tuple_list, schema)
+        return spark_df        
+    
+    def create_iceberg_table(self, iceberg_table_name, create_iceberg_table_script):
         self.spark_session.sql("CREATE NAMESPACE IF NOT EXISTS nessie.raw;")  
         # Check if the Iceberg table exists, if not, create it
         if self.spark_session.catalog.tableExists(iceberg_table_name):            
@@ -85,6 +97,36 @@ class SparkManager:
             print(f"Iceberg table {iceberg_table_name} does not exist.")
 
 
+    def insert_into_iceberg_table(self, source_spark_df, target_iceberg_table, create_iceberg_table_script):
+        try: 
+            # Create namespace if not exists            
+            self.spark_session.sql("CREATE NAMESPACE IF NOT EXISTS nessie.raw;")  
+            print(target_iceberg_table)
+
+            # Check if the Iceberg table exists, if not, create it
+            if self.spark_session.catalog.tableExists(target_iceberg_table)==False:
+                print("xxxxx")
+                logger.info(f"Since the iceberg table {target_iceberg_table} does not exist, it will be created.")
+                # create_table_script = schema_manager.get_create_table_script("tables", target_iceberg_table) 
+
+                
+                print(create_iceberg_table_script)            
+                self.spark_session.sql(create_iceberg_table_script)
+            
+            source_spark_df.writeTo(target_iceberg_table).append()
+            # # source_df.write.mode("overwrite").saveAsTable(iceberg_table) 
+           
+            incremental_count=source_spark_df.count()
+            total_count=self.spark_session.table(target_iceberg_table).count()
+            # logger.info(f"Since the iceberg table {target_iceberg_table} does not exist, it will be created.")
+            print(f"{target_iceberg_table} was loaded with {incremental_count} records, totally {total_count} records.")
+            
+        except Exception as e:
+            print(f"Error loading lceberg raw table: {e}")
+
+
+
+            
             
         
     # def get_spark_table_schema(self):

@@ -9,4 +9,4 @@ parameters:
   conn_config_spark_key: ['spark']  
   source_url_query: >
     SELECT url FROM fin.vw_etl_tradingview_etf_component_spy WHERE etf_symbol
-    ='SPY'  
+    ='SPY' LIMIT 1
