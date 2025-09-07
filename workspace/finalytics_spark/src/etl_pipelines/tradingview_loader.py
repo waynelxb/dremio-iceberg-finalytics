@@ -60,78 +60,77 @@ class TradingViewLoader:
             raise
 
     def fetch_tradingview_data(self):
+        # Script data from each url then put them together, return as a whole
         logger.info("Fetching TradingView data with urls...")
         try:
-            tradingview_url_list = self.get_tradingview_url_list()                
-            all_record_tuple_list=[]
+            tradingview_url_list = self.get_tradingview_url_list()
+            # records is a tuple list [(1,2,3),(3,5,6)]
+            records=[]
             for url in tradingview_url_list:
                 tradingview_data_fetcher = RawTradingViewDataFetcher(url)
-                all_record_tuple_list.extend(tradingview_data_fetcher.scrape_tradingview_data_from_url(url))
-            return all_record_tuple_list
+                records.extend(tradingview_data_fetcher.scrape_tradingview_data_from_url(url))
+
+            # Some records may not have all the required fields, if so, exclude such records
+            qualified_records = []
+            failed_records=[]            
+            for row in records:
+                if len(row) == len(self.iceberg_raw_table_definition['schema']):  # If row is incomplete
+                    qualified_records.append(row)
+                else:
+                    failed_records.append(row)
+            if len(failed_records)>0: 
+                print("Some TradingView records were failed...", str(failed_records))
+                
+            return qualified_records
         except Exception as e:
             logger.error(f"Error fetching data from Yahoo API: {e}", exc_info=True)
             raise
 
-    def ingest_tradingview_data_into_iceberg(self):
-        records = self.fetch_tradingview_data()
-        fixed_records = []
-        for row in records:
-            if len(row) == 13:  # If row is incomplete
-                # # Pad with None to match schema length
-                # row = row + (None,) * (13 - len(row))
-                fixed_records.append(row)
-
-        spark_manager=SparkManager(self.spark_app_name, self.spark_conn_params)
-
-        
+    def load_tradingview_data_into_iceberg(self):    
+        ## Append raw records into iceberg raw table
+        # fetch raw records
+        raw_records = self.fetch_tradingview_data()
+        # Create Spark session
+        spark_manager=SparkManager(self.spark_app_name, self.spark_conn_params)  
+        # Create schema based script generator for raw records and table
         spark_script_generator=SparkSchemaBasedScriptGenerator(self.iceberg_raw_table_name, self.iceberg_raw_table_definition)        
-        create_iceberg_raw_table_script=spark_script_generator.get_create_spark_table_script()        
-        print(create_iceberg_raw_table_script)
+        raw_record_schema=spark_script_generator.get_spark_dataframe_schema()
+        # Create dataframe for raw records
+        df_raw_records=spark_manager.create_spark_df_with_schema(raw_records, raw_record_schema) 
 
-
-
-        
-
-        sp_df=spark_manager.create_spark_df_with_schema_dict(fixed_records, self.iceberg_raw_table_definition)
-        sp_df.show()
-
-        spark_manager.insert_into_iceberg_table(sp_df, self.iceberg_raw_table_name, create_iceberg_raw_table_script)
+        # Generate script for creating table 
+        create_iceberg_raw_table_script=spark_script_generator.get_create_spark_table_script()  
+        # Insert data into iceberg raw table
+        spark_manager.insert_into_iceberg_table(df_raw_records, self.iceberg_raw_table_name, create_iceberg_raw_table_script)
 
         
-        # spark_manager.create_iceberg_table(self.iceberg_raw_table_name, create_iceberg_raw_table_script)
-        
-        # schema = StructType([
-        #     StructField(field["name"], eval(field["type"])(), field["nullable"])
-        #     for field in self.iceberg_raw_table_definition["schema"]
-        # ])
-        # print(records)
-        # print(schema)
-        # my_spark_session=spark_manager.get_spark_session()
-        # source_df=spark_manager.create_spark_df(records, schema)
 
-        
-        # df = spark.createDataFrame(records, self.iceberg_raw_table_schema)
-        # # df.select("symbol", "Sector","ImportDatetime").show()   
-        
-        
-        # # if raw_yahoo_df is None or raw_yahoo_df.empty:
-        # #     logger.warning("No data available for ingestion. Skipping Iceberg ingestion step.")
-        # #     return
+    # def load_data_from_iceberg_to_pg(self, source_iceberg_table, target_pg_table, load_mode):
+    #     """
+    #     Load data from Iceberg to PostgreSQL.
+    #     """
+    #     try:
+    #         if load_mode=="TruncateLoad":
+    #             logger.info(f"Truncating PostgreSQL table: {self.pg_stage_table}...")
+    #             pg_truncate_script = f"TRUNCATE TABLE {target_pg_table}"
+    #             pg_db_manager.execute_sql_script(pg_truncate_script)
 
-        # logger.info(f"Ingesting data into Iceberg table '{self.iceberg_raw_table_name}'...")
-        # try:
-        #     iceberg_ingester = IcebergIngester(
-        #               spark_app_name, 
-        #               spark_conn_params,
-        #               iceberg_table_name,
-        #               iceberg_table_schema  
-        #     )
-        #     yahoo_data_iceberg_ingester.ingest_data_to_destination(raw_yahoo_df, self.iceberg_raw_table_name)
-        #     logger.info("Data ingestion to Iceberg completed successfully.")
-        # except Exception as e:
-        #     logger.error(f"Error ingesting data to Iceberg: {e}", exc_info=True)
-        #     raise
+    #             logger.info(f"Loading data from Iceberg to PostgreSQL table: {self.pg_stage_table}...")
+    #             self.iceberg_manager.insert_iceberg_data_into_pg(
+    #                 self.iceberg_raw_table,           
+    #                 self.pg_stage_table,
+    #                 self.fin_db_manager.jdbc_url,
+    #                 self.fin_db_manager.jdbc_properties,
+    #                 "overwrite",
+    #             )
+    #         logger.info("Data loaded into PostgreSQL successfully.")
+    #     except Exception as e:
+    #         logger.error(f"Failed to load data into PostgreSQL: {e}", exc_info=True)
+    #         raise
 
+
+    
+ 
     def run_loader(self):
         """
         Executes the complete data pipeline:  
@@ -141,7 +140,7 @@ class TradingViewLoader:
         """
         try:
             # tradingview_url_list = self.get_tradingview_url_list()
-            tradingview_data = self.ingest_tradingview_data_into_iceberg()
+            tradingview_data = self.load_tradingview_data_into_iceberg()
             # print(tradingview_data)
             # raw_yahoo_df = self.fetch_yahoo_data(grouped_symbol_list)
             # self.ingest_data(raw_yahoo_df)

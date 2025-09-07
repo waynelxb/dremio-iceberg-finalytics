@@ -78,6 +78,11 @@ class SparkManager:
         ])
         spark_df = self.spark_session.createDataFrame(record_tuple_list, schema)
         return spark_df        
+
+    def create_spark_df_with_schema(self, record_tuple_list, record_schema):  
+        spark_df = self.spark_session.createDataFrame(record_tuple_list, record_schema)
+        return spark_df   
+
     
     def create_iceberg_table(self, iceberg_table_name, create_iceberg_table_script):
         self.spark_session.sql("CREATE NAMESPACE IF NOT EXISTS nessie.raw;")  
@@ -101,21 +106,14 @@ class SparkManager:
         try: 
             # Create namespace if not exists            
             self.spark_session.sql("CREATE NAMESPACE IF NOT EXISTS nessie.raw;")  
-            print(target_iceberg_table)
-
             # Check if the Iceberg table exists, if not, create it
             if self.spark_session.catalog.tableExists(target_iceberg_table)==False:
-                print("xxxxx")
                 logger.info(f"Since the iceberg table {target_iceberg_table} does not exist, it will be created.")
-                # create_table_script = schema_manager.get_create_table_script("tables", target_iceberg_table) 
-
+                # create_table_script = schema_manager.get_create_table_script("tables", target_iceberg_table)       
+                self.spark_session.sql(create_iceberg_table_script) 
                 
-                print(create_iceberg_table_script)            
-                self.spark_session.sql(create_iceberg_table_script)
-            
             source_spark_df.writeTo(target_iceberg_table).append()
-            # # source_df.write.mode("overwrite").saveAsTable(iceberg_table) 
-           
+            # # source_df.write.mode("overwrite").saveAsTable(iceberg_table)            
             incremental_count=source_spark_df.count()
             total_count=self.spark_session.table(target_iceberg_table).count()
             # logger.info(f"Since the iceberg table {target_iceberg_table} does not exist, it will be created.")

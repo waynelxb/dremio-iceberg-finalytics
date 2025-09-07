@@ -28,38 +28,38 @@ def main(operator_config_file: str):
     Main function that loads the job configuration and executes the pipeline.
     :param operator_config_file: The name of the job to execute.
     """
-    try:      
-        # Read loader configuration file
+    try: 
+        ######## Get parameters required by TradingViewLoader
+        
+        # Read operator_config_file
         with open(operator_config_file, "r") as file:
             operator_config = yaml.safe_load(file)  
         
         spark_app_name=operator_config["parameters"]["spark_app_name"]    
-        print(spark_app_name)
-        source_url_query=operator_config["parameters"]["source_url_query"]
+        source_url_query=operator_config["parameters"]["source_url_query"]            
             
-            
-        ## Get db connection uri
-        # Get db configuration file path from loader configuration file
+        ## Get db connection and spark config from connection configuration file
+        # Get connection configuration file path
         conn_config_file=operator_config["parameters"]["conn_config_file"]
-        # Get db conn uri key path in configuration file
-        conn_config_pgdb_uri_key=operator_config["parameters"]["conn_config_pgdb_uri_key"]        
-        # print(db_conn_uri_key)        
-        # Read db configuration file to get db conn uri
+        
+        # 1.1 Get db conn uri key path from operatior configuration file
+        conn_config_pgdb_uri_key=operator_config["parameters"]["conn_config_pgdb_uri_key"]  
+        # 1.2 Read db configuration file to get pgdb_conn_uri
         with open(conn_config_file, "r") as file:
             conn_config = yaml.safe_load(file)        
         pgdb_conn_uri = get_nested_dict(conn_config, conn_config_pgdb_uri_key)
-        # print(pgdb_conn_uri)     
-
-
-        conn_config_spark_key=operator_config["parameters"]["conn_config_spark_key"]
         
+        # 2.1 Get spark configuration key path from operatior configuration file       
+        conn_config_spark_key=operator_config["parameters"]["conn_config_spark_key"]
+        # 2.2 Get spark configuration params   
         spark_conn_params = get_nested_dict(conn_config, conn_config_spark_key)
         print(spark_conn_params)
 
         
         ## Get iceberg raw table schema
-        # Get schema configuration file path from loader configuration file
+        # Get schema configuration file path from operator configuration file
         schema_config_file=operator_config["parameters"]['schema_config_file']
+        
         # Get table key path in schema configuration file     
         iceberg_raw_table_key=operator_config["parameters"]['schema_config_iceberg_raw_table_key']   
         iceberg_raw_table_name=iceberg_raw_table_key[1]        
@@ -68,8 +68,7 @@ def main(operator_config_file: str):
             schema_config = yaml.safe_load(file)       
         iceberg_raw_table_definition = get_nested_dict(schema_config, iceberg_raw_table_key)
 
-       
-             
+        print(len(iceberg_raw_table_definition['schema']))
 
         # Initialize and execute the pipeline
         DataLoader = TradingViewLoader(
@@ -81,9 +80,9 @@ def main(operator_config_file: str):
                  iceberg_raw_table_definition                       
         )
 
-        # # logger.info(f"Starting pipeline execution for job: {operator_config_file}")
+        # # # logger.info(f"Starting pipeline execution for job: {operator_config_file}")
         DataLoader.run_loader()
-        # # logger.info(f"Pipeline execution completed successfully for job: {operator_config_file}")
+        # # # logger.info(f"Pipeline execution completed successfully for job: {operator_config_file}")
 
     except FileNotFoundError as e:
         logger.critical(f"Configuration file missing: {e}")

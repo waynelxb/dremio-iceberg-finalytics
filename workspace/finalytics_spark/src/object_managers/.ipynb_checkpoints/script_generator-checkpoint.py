@@ -21,8 +21,7 @@ class SparkSchemaBasedScriptGenerator:
         return column_list
     
     def get_create_spark_table_script(self):    
-        schema = self.get_spark_dataframe_schema()
-        
+        schema = self.get_spark_dataframe_schema()        
         # Generate SQL columns
         columns = ", ".join([f"{field.name} {field.dataType.simpleString()}" for field in schema.fields])     
         
