@@ -39,15 +39,15 @@ def main(operator_config_file: str):
         source_url_query=operator_config["parameters"]["source_url_query"]            
             
         ## Get db connection and spark config from connection configuration file
-        # Get connection configuration file path
+        # 1.1 Get connection configuration file path        
         conn_config_file=operator_config["parameters"]["conn_config_file"]
-        
-        # 1.1 Get db conn uri key path from operatior configuration file
-        conn_config_pgdb_uri_key=operator_config["parameters"]["conn_config_pgdb_uri_key"]  
         # 1.2 Read db configuration file to get pgdb_conn_uri
         with open(conn_config_file, "r") as file:
-            conn_config = yaml.safe_load(file)        
-        pgdb_conn_uri = get_nested_dict(conn_config, conn_config_pgdb_uri_key)
+            conn_config = yaml.safe_load(file)    
+        # 1.3 Get db conn params key path from operatior configuration file
+        conn_config_pgdb_uri_key=operator_config["parameters"]["conn_config_pgdb_params_key"]  
+        pgdb_conn_params = get_nested_dict(conn_config, conn_config_pgdb_uri_key)
+        print(pgdb_conn_params)
         
         # 2.1 Get spark configuration key path from operatior configuration file       
         conn_config_spark_key=operator_config["parameters"]["conn_config_spark_key"]
@@ -72,7 +72,7 @@ def main(operator_config_file: str):
 
         # Initialize and execute the pipeline
         DataLoader = TradingViewLoader(
-                 pgdb_conn_uri,
+                 pgdb_conn_params,
                  source_url_query,
                  spark_app_name, 
                  spark_conn_params,

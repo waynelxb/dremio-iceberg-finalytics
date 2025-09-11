@@ -6,9 +6,14 @@ spark:
   spark_master_uri: "spark://172.22.0.30:7077"
 
 databases:
+  pgsql_driver: "org.postgresql.Driver" 
   finalytics:
-    connection_uri: "postgresql://postgres:HDdimension1!@192.168.110.222:5432/finalytics"
-    driver: "org.postgresql.Driver" 
-      
+    host: "192.168.110.222"
+    port: "5432"
+    user: "postgres"
+    password: "HDdimension1!"
+    dbname: "finalytics"
+    
+
 
 

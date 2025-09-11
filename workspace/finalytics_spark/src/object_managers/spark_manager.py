@@ -123,38 +123,20 @@ class SparkManager:
             print(f"Error loading lceberg raw table: {e}")
 
 
-
+    def insert_data_from_iceberg_into_pg(self, jdbc_url, jdbc_conn_properties, source_iceberg_table, target_pg_table):
+        try:             
+            df_source=self.spark_session.read.table(source_iceberg_table)            
+            # Write DataFrame to PostgreSQL
+            df_source.write.jdbc(
+                        url=jdbc_url,
+                        table=target_pg_table,
+                        mode="append",
+                        properties=jdbc_conn_properties
+                    )                
+        except Exception as e:
+            print(f"Error loading lceberg raw table: {e}")
             
-            
-        
-    # def get_spark_table_schema(self):
-    #     schema = StructType([
-    #         StructField(field["name"], eval(field["type"])(), field["nullable"])
-    #         for field in self.spark_table_def["schema"]
-    #     ])
-    #     return schema    
 
-    # def get_column_list(self):
-    #     column_list = [field['name'] for field in self.spark_table_def["schema"]]
-    #     # elif object_type == "apis":
-    #     #     column_list = object_def
-    #     return column_list
-    
-    # def get_create_spark_table_script(self):    
-    #     schema = self.get_spark_table_schema()
-    #     partition_by = self.spark_table_def['partition_by']
-        
-    #     # Generate SQL columns
-    #     columns = ", ".join([f"{field.name} {field.dataType.simpleString()}" for field in schema.fields])
-    #     partitioning = ", ".join([p["field"] for p in partition_by]) if partition_by else ""
-        
-    #     # Generate CREATE TABLE query
-    #     create_table_query = f"""
-    #     CREATE TABLE IF NOT EXISTS {self.spark_table_name} ({columns})
-    #     """
-    #     if partitioning:
-    #         create_table_query += f" PARTITIONED BY ({partitioning})"
-    #     return create_table_query.strip()
 
 # table_name="abc"
 # table_def={'schema': [{'name': 'date', 'type': 'DateType', 'nullable': False}, {'name': 'symbol', 'type': 'StringType', 'nullable': False}, {'name': 'open', 'type': 'StringType', 'nullable': True}, {'name': 'high', 'type': 'StringType', 'nullable': True}, {'name': 'low', 'type': 'StringType', 'nullable': True}, {'name': 'close', 'type': 'StringType', 'nullable': True}, {'name': 'volume', 'type': 'IntegerType', 'nullable': True}, {'name': 'import_time', 'type': 'TimestampType', 'nullable': False}], 'partition_by': [{'field': 'date'}]}
