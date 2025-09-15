@@ -48,6 +48,8 @@ class RawYahooDataFetcher:
             data = Ticker(symbol_list)
             hist_data = data.history(start=start_date, end=end_date, interval="1d").reset_index()
 
+            print(hist_data)
+
             # Select relevant columns
             columns_to_select = [
                 "date",

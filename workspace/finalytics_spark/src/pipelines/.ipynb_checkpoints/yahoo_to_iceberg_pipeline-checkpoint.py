@@ -92,7 +92,7 @@ class YahooToIcebergPipeline:
             logger.warning("No data available for ingestion. Skipping Iceberg ingestion step.")
             return
 
-        logger.info(f"Start to load data into Iceberg table '{self.iceberg_raw_table}'...")
+        logger.info(f"Ingesting data into Iceberg table '{self.iceberg_raw_table}'...")
         try:
             yahoo_data_iceberg_ingester = IcebergDestinationIngester(
                 self.connection_config_file_path,

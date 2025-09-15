@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 
-class SparkManager:    
+class IcebergManager:    
     def __init__(self, spark_app_name, spark_conn_params):
         self.spark_app_name=spark_app_name                    
         self.catalog_uri = spark_conn_params['catalog_uri'] 
@@ -102,7 +102,7 @@ class SparkManager:
             print(f"Iceberg table {iceberg_table_name} does not exist.")
 
 
-    def insert_into_iceberg_table(self, source_spark_df, target_iceberg_table, create_iceberg_table_script):
+    def load_data_from_df_into_iceberg(self, source_spark_df, target_iceberg_table, create_iceberg_table_script):
         try: 
             # Create namespace if not exists            
             self.spark_session.sql("CREATE NAMESPACE IF NOT EXISTS nessie.raw;")  
@@ -123,7 +123,7 @@ class SparkManager:
             print(f"Error loading lceberg raw table: {e}")
 
 
-    def insert_data_from_iceberg_into_pg(self, jdbc_url, jdbc_conn_properties, source_iceberg_table, target_pg_table):
+    def load_data_from_iceberg_into_pg(self, jdbc_url, jdbc_conn_properties, source_iceberg_table, target_pg_table):
         try:             
             df_source=self.spark_session.read.table(source_iceberg_table)            
             # Write DataFrame to PostgreSQL

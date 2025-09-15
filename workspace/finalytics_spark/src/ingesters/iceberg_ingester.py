@@ -6,8 +6,8 @@ import yaml
 import pandas as pd
 from pyspark.sql import SparkSession
 
-from object_managers.iceberg_manager import IcebergManager
-from object_managers.database_manager import PgDBManager
+from managers.iceberg_manager import IcebergManager
+from managers.database_manager import PgDBManager
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

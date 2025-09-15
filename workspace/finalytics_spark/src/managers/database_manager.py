@@ -31,16 +31,16 @@ class PgDBManager:
             print(f"An error occurred: {e}")
             return None
 
-    def execute_sql_script(self, sql_script):
-        try:
-            with psycopg2.connect(**self.db_conn_params) as conn:
-                with conn.cursor() as cursor:  # Cursor context
-                    cursor.execute(sql_script)
-                    conn.commit()
-        except Exception as e:
-            print(f"An error occurred: {e}")
+    # def execute_sql_script(self, sql_script):
+    #     try:
+    #         with psycopg2.connect(**self.db_conn_params) as conn:
+    #             with conn.cursor() as cursor:  # Cursor context
+    #                 cursor.execute(sql_script)
+    #                 conn.commit()
+    #     except Exception as e:
+    #         print(f"An error occurred: {e}")
 
-    def execute_sql(self, sql_script: str, params: tuple = ()) -> bool:
+    def execute_sql_script(self, sql_script: str, params: tuple = ()) -> bool:
         """Execute a non-SELECT SQL script (e.g., INSERT, UPDATE, DELETE) with transaction handling.
 
         Args:
