@@ -1,13 +1,15 @@
-parameters:
-  conn_config_file: /opt/workspace/finalytics_spark/config/cfg_conn.yaml
-  conn_config_pgdb_uri_key: ['databases', 'finalytics', 'connection_uri']
-  conn_config_pgdb_params_key: ['databases', 'finalytics']
-  
-  schema_config_file: /opt/workspace/finalytics_spark/config/cfg_schemas.yaml
-  schema_config_iceberg_raw_table_key: ["tables","nessie.raw.tradingview_etf_component"]
+assignments:
+  load_tradingview_etf_compoent_spy:
+    parameters:
+      conn_config_file: /opt/workspace/finalytics_spark/config/cfg_connections.yaml
+      conn_config_pgdb_uri_key: ['databases', 'finalytics', 'connection_uri']
+      conn_config_pgdb_params_key: ['databases', 'finalytics']
+      
+      schema_config_file: /opt/workspace/finalytics_spark/config/cfg_schemas.yaml
+      schema_config_iceberg_raw_table_key: ["tables","nessie.raw.tradingview_etf_component"]
 
-  spark_app_name: finalytics_spark
-  conn_config_spark_key: ['spark']  
-  source_url_query: >
-    SELECT url FROM fin.vw_etl_tradingview_etf_component_spy WHERE etf_symbol
-    ='SPY' LIMIT 1
+      spark_app_name: finalytics_spark
+      conn_config_spark_key: ['spark']  
+      source_url_query: >
+        SELECT url FROM fin.vw_etl_tradingview_etf_component_spy WHERE etf_symbol
+        ='SPY' LIMIT 1

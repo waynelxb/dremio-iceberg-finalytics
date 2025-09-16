@@ -2,7 +2,7 @@ assignments:
   load_yahoo_etf_eod_quotes_to_iceberg:
     # Job parameters for the LoadYahooEOD class
     parameters:
-      conn_config_file: /opt/workspace/finalytics_spark/config/cfg_conn.yaml
+      conn_config_file: /opt/workspace/finalytics_spark/config/cfg_connections.yaml
       conn_config_pgdb_uri_key: ['databases', 'finalytics', 'connection_uri']
       conn_config_pgdb_params_key: ['databases', 'finalytics']
 

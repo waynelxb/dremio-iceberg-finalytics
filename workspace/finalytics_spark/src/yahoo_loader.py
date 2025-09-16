@@ -105,7 +105,7 @@ if __name__ == "__main__":
         "--loader-config-file",
         type=str,
         required=True,
-        help="operater config file path, e.g., '/opt/workspace/finalytics_spark/config/cfg_yahoo_loader.yaml'.",
+        help="loader config file path, e.g., '/opt/workspace/finalytics_spark/config/cfg_yahoo_loader.yaml'.",
     )
 
     parser.add_argument(
@@ -119,4 +119,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     main(args.loader_config_file, args.assignment)
 
-    # python script.py --loader-config-file /opt/workspace/finalytics_spark/config/cfg_yahoo_loader.yaml --assignment load_yahoo_etf_eod_quotes_to_iceberg
+# (finalytics-spark-py3.11) root@9607765a4290:/opt/workspace/finalytics_spark/src# python yahoo_loader.py --loader-config-file /opt/workspace/finalytics_spark/config/cfg_yahoo_loader.yaml --assignment load_yahoo_etf_eod_quotes_to_iceberg

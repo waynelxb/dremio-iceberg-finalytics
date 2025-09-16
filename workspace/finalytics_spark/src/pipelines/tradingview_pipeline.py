@@ -5,7 +5,7 @@ from typing import List
 from source_fetchers.raw_tradingview_data_fetcher import RawTradingViewDataFetcher
 from ingesters.iceberg_ingester import IcebergIngester
 from managers.database_manager import PgDBManager
-from managers.spark_manager import SparkManager
+from managers.iceberg_manager import IcebergManager
 from managers.script_generator import SparkSchemaBasedScriptGenerator
 import pyspark
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType, DoubleType, DateType, FloatType, TimestampType, LongType
@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 
-class TradingViewLoader:
+class TradingviewPipeline:
     """
     A pipeline executor that fetches data from Yahoo's API, and ingests them into an Iceberg table.
     """
@@ -42,7 +42,7 @@ class TradingViewLoader:
         
         # self.pg_db_manager = PgDBManager(self.pgdb_conn_uri) 
         self.pg_stage_table_name='stage.tradingview_etf_component'
-        self.spark_manager=SparkManager(self.spark_app_name, self.spark_conn_params)  
+        self.iceberg_manager=IcebergManager(self.spark_app_name, self.spark_conn_params)  
 
         self.jdbc_url = f"jdbc:postgresql://{self.pgdb_conn_params['host']}:{self.pgdb_conn_params['port']}/{self.pgdb_conn_params['dbname']}"
         self.jdbc_connection_properties = {
@@ -59,7 +59,6 @@ class TradingViewLoader:
         logger.info("Fetching Trading View url from PostgreSQL...")    
 
         try:
-            print(self.source_url_query)
             query_result = self.pg_db_manager.get_sql_script_result_list(self.source_url_query)
             tradingview_url_list = [url[0] for url in query_result]
        
@@ -92,9 +91,9 @@ class TradingViewLoader:
                     qualified_records.append(row)
                 else:
                     failed_records.append(row)
-            if len(failed_records)>0: 
-                print("Some TradingView records were failed...", str(failed_records))
-                
+            if len(failed_records)>0:
+                logger.warning(f"Some fields were missing from these records: {str(failed_records)}.")
+
             return qualified_records
         except Exception as e:
             logger.error(f"Error fetching data from Yahoo API: {e}", exc_info=True)
@@ -108,11 +107,11 @@ class TradingViewLoader:
         spark_script_generator=SparkSchemaBasedScriptGenerator(self.iceberg_raw_table_name, self.iceberg_raw_table_definition)        
         raw_record_schema=spark_script_generator.get_spark_dataframe_schema()
         # Create dataframe for raw records
-        df_raw_records=self.spark_manager.create_spark_df_with_schema(raw_records, raw_record_schema) 
+        df_raw_records=self.iceberg_manager.create_spark_df_with_schema(raw_records, raw_record_schema) 
         # Generate script for creating table 
         create_iceberg_raw_table_script=spark_script_generator.get_create_spark_table_script()  
         # Insert data into iceberg raw table
-        self.spark_manager.insert_into_iceberg_table(df_raw_records, self.iceberg_raw_table_name, create_iceberg_raw_table_script)        
+        self.iceberg_manager.load_data_from_df_into_iceberg(df_raw_records, self.iceberg_raw_table_name, create_iceberg_raw_table_script)        
 
     def load_raw_data_from_iceberg_into_pg(self):
         """
@@ -124,7 +123,7 @@ class TradingViewLoader:
             pg_truncate_script = f"TRUNCATE TABLE {self.pg_stage_table_name}"
             self.pg_db_manager.execute_sql_script(pg_truncate_script)
 
-            self.spark_manager.insert_data_from_iceberg_into_pg(
+            self.iceberg_manager.load_data_from_iceberg_into_pg(
                 self.jdbc_url,
                 self.jdbc_connection_properties,
                 self.iceberg_raw_table_name,           
@@ -135,7 +134,7 @@ class TradingViewLoader:
             logger.error(f"Failed to load data into PostgreSQL: {e}", exc_info=True)
             raise    
  
-    def run_loader(self):
+    def execute_pipeline(self):
         """
         Executes the complete data pipeline:  
         - Fetch grouped symbols from PostgreSQL.  
@@ -145,9 +144,7 @@ class TradingViewLoader:
         try:
             # tradingview_url_list = self.get_tradingview_url_list()
             self.load_raw_data_into_iceberg()                         
-            self.load_raw_data_from_iceberg_into_pg()            
-
-
+            self.load_raw_data_from_iceberg_into_pg()
         except Exception as e:
             logger.error(f"Pipeline execution failed: {e}", exc_info=True)
             raise

@@ -3,11 +3,10 @@ import argparse
 from pathlib import Path
 from typing import Dict, Any
 import yaml
-import os
 from functools import reduce
 import operator
 
-from etl_pipelines.tradingview_loader import TradingViewLoader
+from pipelines.tradingview_pipeline import TradingviewPipeline
 
 # Configure logging with timestamps
 logging.basicConfig(
@@ -23,55 +22,52 @@ def get_nested_dict(dictionary, key_path):
         raise KeyError(f"Could not access key path {key_path}: {e}")
       
 
-def main(operator_config_file: str):
+def main(loader_config_file: str, assignment: str):
     """
     Main function that loads the job configuration and executes the pipeline.
-    :param operator_config_file: The name of the job to execute.
+    :param loader_config_file: The name of the job to execute.
     """
     try: 
         ######## Get parameters required by TradingViewLoader
         
-        # Read operator_config_file
-        with open(operator_config_file, "r") as file:
+        # Read loader_config_file
+        with open(loader_config_file, "r") as file:
             operator_config = yaml.safe_load(file)  
         
-        spark_app_name=operator_config["parameters"]["spark_app_name"]    
-        source_url_query=operator_config["parameters"]["source_url_query"]            
+        spark_app_name=operator_config['assignments'][assignment]["parameters"]["spark_app_name"]    
+        source_url_query=operator_config['assignments'][assignment]["parameters"]["source_url_query"]            
             
         ## Get db connection and spark config from connection configuration file
         # 1.1 Get connection configuration file path        
-        conn_config_file=operator_config["parameters"]["conn_config_file"]
+        conn_config_file=operator_config['assignments'][assignment]["parameters"]["conn_config_file"]
         # 1.2 Read db configuration file to get pgdb_conn_uri
         with open(conn_config_file, "r") as file:
             conn_config = yaml.safe_load(file)    
         # 1.3 Get db conn params key path from operatior configuration file
-        conn_config_pgdb_uri_key=operator_config["parameters"]["conn_config_pgdb_params_key"]  
+        conn_config_pgdb_uri_key=operator_config['assignments'][assignment]["parameters"]["conn_config_pgdb_params_key"]  
         pgdb_conn_params = get_nested_dict(conn_config, conn_config_pgdb_uri_key)
-        print(pgdb_conn_params)
+
         
         # 2.1 Get spark configuration key path from operatior configuration file       
-        conn_config_spark_key=operator_config["parameters"]["conn_config_spark_key"]
+        conn_config_spark_key=operator_config['assignments'][assignment]["parameters"]["conn_config_spark_key"]
         # 2.2 Get spark configuration params   
         spark_conn_params = get_nested_dict(conn_config, conn_config_spark_key)
-        print(spark_conn_params)
 
         
         ## Get iceberg raw table schema
         # Get schema configuration file path from operator configuration file
-        schema_config_file=operator_config["parameters"]['schema_config_file']
+        schema_config_file=operator_config['assignments'][assignment]["parameters"]['schema_config_file']
         
         # Get table key path in schema configuration file     
-        iceberg_raw_table_key=operator_config["parameters"]['schema_config_iceberg_raw_table_key']   
+        iceberg_raw_table_key=operator_config['assignments'][assignment]["parameters"]['schema_config_iceberg_raw_table_key']   
         iceberg_raw_table_name=iceberg_raw_table_key[1]        
         # Read schema configuration file to get table schema
         with open(schema_config_file, "r") as file:
             schema_config = yaml.safe_load(file)       
         iceberg_raw_table_definition = get_nested_dict(schema_config, iceberg_raw_table_key)
 
-        print(len(iceberg_raw_table_definition['schema']))
-
         # Initialize and execute the pipeline
-        DataLoader = TradingViewLoader(
+        tradingview_pipeline = TradingviewPipeline(
                  pgdb_conn_params,
                  source_url_query,
                  spark_app_name, 
@@ -80,9 +76,9 @@ def main(operator_config_file: str):
                  iceberg_raw_table_definition                       
         )
 
-        # # # logger.info(f"Starting pipeline execution for job: {operator_config_file}")
-        DataLoader.run_loader()
-        # # # logger.info(f"Pipeline execution completed successfully for job: {operator_config_file}")
+        # # # logger.info(f"Starting pipeline execution for job: {loader_config_file}")
+        tradingview_pipeline.execute_pipeline()
+        # # # logger.info(f"Pipeline execution completed successfully for job: {loader_config_file}")
 
     except FileNotFoundError as e:
         logger.critical(f"Configuration file missing: {e}")
@@ -98,12 +94,21 @@ if __name__ == "__main__":
         description="Execute a data ingestion job."
     )
     parser.add_argument(
-        "--operator-config-file",
+        "--loader-config-file",
         type=str,
         required=True,
-        help="The name of the job to run (e.g., 'load_tradingview_data').",
+        help="loader config file path, e.g., '/opt/workspace/finalytics_spark/config/cfg_yahoo_loader.yaml'.",
+    )
+
+    parser.add_argument(
+        "--assignment",
+        type=str,
+        required=True,
+        help="the assignment of the job run, e.g., 'load_yahoo_etf_eod_quotes_to_iceberg'.",
     )
 
     # Parse arguments and execute the job
     args = parser.parse_args()
-    main(args.operator_config_file)
+    main(args.loader_config_file, args.assignment)
+
+    # python tradingview_loader.py --loader-config-file /opt/workspace/finalytics_spark/config/cfg_tradingview_loader.yaml --assignment load_tradingview_etf_compoent_spy
