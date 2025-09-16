@@ -51,15 +51,12 @@ def main(loader_config_file: str, assignment: str):
         # 1.3 Get db conn params key path from operatior configuration file
         conn_config_pgdb_uri_key=loader_config['assignments'][assignment]["parameters"]["conn_config_pgdb_params_key"]  
         pgdb_conn_params = get_nested_dict(conn_config, conn_config_pgdb_uri_key)
-        print(pgdb_conn_params)
-        
+               
         # 2.1 Get spark configuration key path from operatior configuration file       
         conn_config_spark_key=loader_config['assignments'][assignment]["parameters"]["conn_config_spark_key"]
         # 2.2 Get spark configuration params   
         spark_conn_params = get_nested_dict(conn_config, conn_config_spark_key)
-        print(spark_conn_params)
-
-        
+                
         ## Get iceberg raw table schema
         # Get schema configuration file path from loader configuration file
         schema_config_file=loader_config['assignments'][assignment]["parameters"]['schema_config_file']
@@ -67,21 +64,12 @@ def main(loader_config_file: str, assignment: str):
         # Get table key path in schema configuration file     
         iceberg_raw_table_key=loader_config['assignments'][assignment]["parameters"]['schema_config_iceberg_raw_table_key']   
         iceberg_raw_table_name=iceberg_raw_table_key[1]   
-        print(iceberg_raw_table_name)     
-
-
-  
    
-
-
-
-
         # Read schema configuration file to get table schema
         with open(schema_config_file, "r") as file:
             schema_config = yaml.safe_load(file)       
         iceberg_raw_table_definition = get_nested_dict(schema_config, iceberg_raw_table_key)
-
-        print(len(iceberg_raw_table_definition['schema']))
+   
 
         # Initialize and execute the pipeline
         yahoo_pipeline = YahooPipeline(
@@ -132,4 +120,3 @@ if __name__ == "__main__":
     main(args.loader_config_file, args.assignment)
 
     # python script.py --loader-config-file /opt/workspace/finalytics_spark/config/cfg_yahoo_loader.yaml --assignment load_yahoo_etf_eod_quotes_to_iceberg
-
