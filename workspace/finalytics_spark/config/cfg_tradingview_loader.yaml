@@ -13,3 +13,6 @@ assignments:
       source_url_query: >
         SELECT url FROM fin.vw_etl_tradingview_etf_component_spy WHERE etf_symbol
         ='SPY' LIMIT 1
+      
+      pg_stage_table_name: stage.tradingview_etf_component
+      # pg_merge_stage_into_fin_script: call fin.usp_load_etf_eod_quote()

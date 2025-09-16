@@ -32,34 +32,36 @@ def main(loader_config_file: str, assignment: str):
         
         # Read loader_config_file
         with open(loader_config_file, "r") as file:
-            operator_config = yaml.safe_load(file)  
+            loader_config = yaml.safe_load(file)  
         
-        spark_app_name=operator_config['assignments'][assignment]["parameters"]["spark_app_name"]    
-        source_url_query=operator_config['assignments'][assignment]["parameters"]["source_url_query"]            
+        spark_app_name=loader_config['assignments'][assignment]["parameters"]["spark_app_name"]    
+        source_url_query=loader_config['assignments'][assignment]["parameters"]["source_url_query"]
+        pg_stage_table_name=loader_config['assignments'][assignment]["parameters"]['pg_stage_table_name']       
+
+
             
         ## Get db connection and spark config from connection configuration file
         # 1.1 Get connection configuration file path        
-        conn_config_file=operator_config['assignments'][assignment]["parameters"]["conn_config_file"]
+        conn_config_file=loader_config['assignments'][assignment]["parameters"]["conn_config_file"]
         # 1.2 Read db configuration file to get pgdb_conn_uri
         with open(conn_config_file, "r") as file:
             conn_config = yaml.safe_load(file)    
-        # 1.3 Get db conn params key path from operatior configuration file
-        conn_config_pgdb_uri_key=operator_config['assignments'][assignment]["parameters"]["conn_config_pgdb_params_key"]  
+        # 1.3 Get db conn params key path from loader configuration file
+        conn_config_pgdb_uri_key=loader_config['assignments'][assignment]["parameters"]["conn_config_pgdb_params_key"]  
         pgdb_conn_params = get_nested_dict(conn_config, conn_config_pgdb_uri_key)
 
         
-        # 2.1 Get spark configuration key path from operatior configuration file       
-        conn_config_spark_key=operator_config['assignments'][assignment]["parameters"]["conn_config_spark_key"]
+        # 2.1 Get spark configuration key path from loader configuration file       
+        conn_config_spark_key=loader_config['assignments'][assignment]["parameters"]["conn_config_spark_key"]
         # 2.2 Get spark configuration params   
         spark_conn_params = get_nested_dict(conn_config, conn_config_spark_key)
 
         
         ## Get iceberg raw table schema
-        # Get schema configuration file path from operator configuration file
-        schema_config_file=operator_config['assignments'][assignment]["parameters"]['schema_config_file']
-        
+        # Get schema configuration file path from loader configuration file
+        schema_config_file=loader_config['assignments'][assignment]["parameters"]['schema_config_file']        
         # Get table key path in schema configuration file     
-        iceberg_raw_table_key=operator_config['assignments'][assignment]["parameters"]['schema_config_iceberg_raw_table_key']   
+        iceberg_raw_table_key=loader_config['assignments'][assignment]["parameters"]['schema_config_iceberg_raw_table_key']   
         iceberg_raw_table_name=iceberg_raw_table_key[1]        
         # Read schema configuration file to get table schema
         with open(schema_config_file, "r") as file:
@@ -73,7 +75,8 @@ def main(loader_config_file: str, assignment: str):
                  spark_app_name, 
                  spark_conn_params,
                  iceberg_raw_table_name, 
-                 iceberg_raw_table_definition                       
+                 iceberg_raw_table_definition,
+                 pg_stage_table_name                    
         )
 
         # # # logger.info(f"Starting pipeline execution for job: {loader_config_file}")

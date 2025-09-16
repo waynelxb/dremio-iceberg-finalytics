@@ -28,7 +28,7 @@ class TradingviewPipeline:
                  spark_conn_params,
                  iceberg_raw_table_name, 
                  iceberg_raw_table_definition,
-                 # pg_stage_table_name,
+                 pg_stage_table_name,
                 ):   
         
         self.pgdb_conn_params=pgdb_conn_params
@@ -41,7 +41,7 @@ class TradingviewPipeline:
         self.pg_db_manager = PgDBManager(self.pgdb_conn_params) 
         
         # self.pg_db_manager = PgDBManager(self.pgdb_conn_uri) 
-        self.pg_stage_table_name='stage.tradingview_etf_component'
+        self.pg_stage_table_name = pg_stage_table_name
         self.iceberg_manager=IcebergManager(self.spark_app_name, self.spark_conn_params)  
 
         self.jdbc_url = f"jdbc:postgresql://{self.pgdb_conn_params['host']}:{self.pgdb_conn_params['port']}/{self.pgdb_conn_params['dbname']}"
